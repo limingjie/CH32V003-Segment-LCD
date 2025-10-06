@@ -8,23 +8,25 @@
 
 #include "ch32fun.h"
 
-// TN Positive 3-digit_segments Segment LCD
+// TN Positive 3-Digit Segment LCD
 //
-//   ==LCD PINOUT==     ==Segments==
-//   COM1 2 3 4 SEG6         A
-//   10 | | | | | 6         ---
+// LCD PINOUT and Segments
+//
+//   COM1 2 3 4 SEG6
+//   10 | | | | | 6         -A-
 //     +---------+        F|   |B
 //     | D1 D2 D3|          -G-
 //     +---------+        E|   |C
-//    1 | | | | | 5         ---
-//   SEG1 2 3 4 5            D
+//    1 | | | | | 5         -D-
+//   SEG1 2 3 4 5
 //
-// Matrix
+// Segment Matrix and CH32V003 Pin Mapping
+//
 //            PC7  PC6  PC5  PC4  PC3  PC2
 //           SEG6 SEG5 SEG4 SEG3 SEG2 SEG1
 // PD4 COM4   1F   1A   2F   2A   3F   3A
 // PD5 COM3   1G   1B   2G   2B   3G   3B
-// PD6 COM2   1E   1C   2E   2C   3E.  3C
+// PD6 COM2   1E   1C   2E   2C   3E   3C
 // PD0 COM1   1D   __   2D   __   3D   __
 
 #define PIN_COM4 PD4
@@ -40,19 +42,19 @@
 
 // Segments bit order: FAGBECD
 const uint8_t digit_segments[10] = {
-    0b1101111,  // 0: ABCDEF_ = 1011011 -> FAGBECD = 1101111
-    0b0001010,  // 1: _BC____ = 0110000 -> FAGBECD = 0001010
-    0b0111101,  // 2: AB_DE_G = 1101101 -> FAGBECD = 0111101
-    0b0111011,  // 3: ABCD__G = 1111001 -> FAGBECD = 0111011
-    0b1011010,  // 4: _BC__FG = 0110011 -> FAGBECD = 1011010
-    0b1110011,  // 5: A_CD_FG = 1011011 -> FAGBECD = 1110011
-    0b1110111,  // 6: A_CDEFG = 1011111 -> FAGBECD = 1110111
-    0b0101010,  // 7: ABC____ = 1110000 -> FAGBECD = 0101010
-    0b1111111,  // 8: ABCDEFG = 1111111 -> FAGBECD = 1111111
-    0b1111011   // 9: ABCD_FG = 1111011 -> FAGBECD = 1111011
+    0b1101111,  // 0: ABCDEF_ = 1011011 -> 1101111
+    0b0001010,  // 1: _BC____ = 0110000 -> 0001010
+    0b0111101,  // 2: AB_DE_G = 1101101 -> 0111101
+    0b0111011,  // 3: ABCD__G = 1111001 -> 0111011
+    0b1011010,  // 4: _BC__FG = 0110011 -> 1011010
+    0b1110011,  // 5: A_CD_FG = 1011011 -> 1110011
+    0b1110111,  // 6: A_CDEFG = 1011111 -> 1110111
+    0b0101010,  // 7: ABC____ = 1110000 -> 0101010
+    0b1111111,  // 8: ABCDEFG = 1111111 -> 1111111
+    0b1111011   // 9: ABCD_FG = 1111011 -> 1111011
 };
 
-uint8_t coms[4]      = {PIN_COM4, PIN_COM3, PIN_COM2, PIN_COM1};
+uint8_t com_pins[4]  = {PIN_COM4, PIN_COM3, PIN_COM2, PIN_COM1};
 uint8_t com_masks[4] = {0, 0, 0, 0};
 
 void calculate_com_masks(uint16_t number)
@@ -75,7 +77,7 @@ void calculate_com_masks(uint16_t number)
         com_masks[0] += ((segments[i] >> 5) & 0x03) << shift;  // FA bits
         com_masks[1] += ((segments[i] >> 3) & 0x03) << shift;  // GB bits
         com_masks[2] += ((segments[i] >> 1) & 0x03) << shift;  // EC bits
-        com_masks[3] += ((segments[i] << 1) & 0x03) << shift;  // D bits
+        com_masks[3] += ((segments[i] << 1) & 0x03) << shift;  // D  bit
     }
 }
 
@@ -131,18 +133,18 @@ int main(void)
         // 1000ms / (2ms x 4) = 125 FPS
         for (uint8_t i = 0; i < 4; i++)
         {
-            // Com - Output
-            funPinMode(coms[i], GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-            // Com - High, Seg1-6 - Low as required
-            funDigitalWrite(coms[i], FUN_HIGH);
+            // COM - Output
+            funPinMode(com_pins[i], GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+            // COM - High, SEG1-6 - Low as required
+            funDigitalWrite(com_pins[i], FUN_HIGH);
             GPIOC->BSHR = (com_masks[i] << 18) + ((~com_masks[i] & 0x3F) << 2);
             Delay_Ms(1);
-            // Com - Low, Seg1-6 - High as required
-            funDigitalWrite(coms[i], FUN_LOW);
+            // COM - Low, SEG1-6 - High as required
+            funDigitalWrite(com_pins[i], FUN_LOW);
             GPIOC->BSHR = (com_masks[i] << 2) + ((~com_masks[i] & 0x3F) << 18);
             Delay_Ms(1);
-            // Com - Float
-            funPinMode(coms[i], GPIO_CNF_IN_FLOATING);
+            // COM - Float
+            funPinMode(com_pins[i], GPIO_CNF_IN_FLOATING);
         }
     }
 }
