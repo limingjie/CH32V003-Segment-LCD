@@ -1,0 +1,190 @@
+@startuml
+
+skinparam dpi 150
+skinparam defaultFontName "Iosevka Curly"
+scale 1 as 50 pixels
+
+<style>
+timingDiagram {
+  .blue {
+    LineColor #2563eb
+  }
+  .red {
+    LineColor #dc2626
+  }
+  .pink {
+    LineColor #ec4899
+  }
+}
+</style>
+
+robust "COM1" as C1 <<blue>>
+robust "COM2" as C2 <<blue>>
+robust "COM3" as C3 <<blue>>
+robust "COM4" as C4 <<blue>>
+robust "SEG" as S <<red>>
+robust "SEG-COM1" as SC1 <<pink>>
+robust "SEG-COM2" as SC2 <<pink>>
+robust "SEG-COM3" as SC3 <<pink>>
+robust "SEG-COM4" as SC4 <<pink>>
+
+C1 has "  +V" as HIGH
+C1 has "+V/2" as MID
+C1 has "   0" as LOW
+
+C2 has "  +V" as HIGH
+C2 has "+V/2" as MID
+C2 has "   0" as LOW
+
+C3 has "  +V" as HIGH
+C3 has "+V/2" as MID
+C3 has "   0" as LOW
+
+C4 has "  +V" as HIGH
+C4 has "+V/2" as MID
+C4 has "   0" as LOW
+
+S has "  +V" as HIGH
+S has " " as MID
+S has "   0" as LOW
+
+SC1 has "  +V" as HIGH
+SC1 has "+V/2" as MID
+SC1 has "   0" as LOW
+SC1 has "-V/2" as mMID
+SC1 has "  -V" as mHIGH
+
+SC2 has "  +V" as HIGH
+SC2 has "+V/2" as MID
+SC2 has "   0" as LOW
+SC2 has "-V/2" as mMID
+SC2 has "  -V" as mHIGH
+
+SC3 has "  +V" as HIGH
+SC3 has "+V/2" as MID
+SC3 has "   0" as LOW
+SC3 has "-V/2" as mMID
+SC3 has "  -V" as mHIGH
+
+SC4 has "  +V" as HIGH
+SC4 has "+V/2" as MID
+SC4 has "   0" as LOW
+SC4 has "-V/2" as mMID
+SC4 has "  -V" as mHIGH
+
+@0
+C1 is MID
+C2 is MID
+C3 is MID
+C4 is MID
+S is LOW
+SC1 is mMID
+SC2 is mMID
+SC3 is mMID
+SC4 is mMID
+
+@1
+C1 is HIGH
+C2 is MID
+C3 is MID
+C4 is MID
+S is LOW
+SC1 is mHIGH
+SC2 is mMID
+SC3 is mMID
+SC4 is mMID
+
+@2
+C1 is LOW
+C2 is MID
+C3 is MID
+C4 is MID
+S is HIGH
+SC1 is HIGH
+SC2 is MID
+SC3 is MID
+SC4 is MID
+
+@3
+C1 is MID
+C2 is HIGH
+C3 is MID
+C4 is MID
+S is HIGH
+SC1 is MID
+SC2 is LOW
+SC3 is MID
+SC4 is MID
+
+@4
+C1 is MID
+C2 is LOW
+C3 is MID
+C4 is MID
+S is LOW
+SC1 is mMID
+SC2 is LOW
+SC3 is mMID
+SC4 is mMID
+
+@5
+C1 is MID
+C2 is MID
+C3 is HIGH
+C4 is MID
+S is HIGH
+SC1 is MID
+SC2 is MID
+SC3 is LOW
+SC4 is MID
+
+@6
+C1 is MID
+C2 is MID
+C3 is LOW
+C4 is MID
+S is LOW
+SC1 is mMID
+SC2 is mMID
+SC3 is LOW
+SC4 is mMID
+
+@7
+C1 is MID
+C2 is MID
+C3 is MID
+C4 is HIGH
+S is HIGH
+SC1 is MID
+SC2 is MID
+SC3 is MID
+SC4 is LOW
+
+@8
+C1 is MID
+C2 is MID
+C3 is MID
+C4 is LOW
+S is LOW
+SC1 is mMID
+SC2 is mMID
+SC3 is mMID
+SC4 is LOW
+
+@9
+C1 is HIGH
+C2 is MID
+C3 is MID
+C4 is MID
+S is HIGH
+SC1 is LOW
+SC2 is MID
+SC3 is MID
+SC4 is MID
+
+S@1 <-> @9: Full Cycle
+SC1@1 <-> @3 : Lit (1/4 Duty)
+
+highlight 1 to 9 #Yellow;line:Orange
+
+@enduml

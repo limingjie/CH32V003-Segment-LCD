@@ -61,7 +61,7 @@
 // 1728:   RCC->CFGR0 = RCC_HPRE_DIV3;         // HCLK = SYSCLK / 3
 
 #define CH32V003                  1
-#define FUNCONF_USE_PLL           1         // Don't use PLL - Phase-Locked Loop - clock multiplier.
+#define FUNCONF_USE_PLL           0         // Don't use PLL - Phase-Locked Loop - clock multiplier.
 #define FUNCONF_USE_HSI           1         // Use HSI - Internal High-Frequency RC Oscillator
 #define FUNCONF_USE_HSE           0         // Use HSE - External High-Frequency Oscillator
 #define FUNCONF_SYSTEM_CORE_CLOCK 24000000  // Computed Clock in Hz - 24MHz x 2 = 48MHz
