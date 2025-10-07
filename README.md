@@ -1,34 +1,34 @@
 # CH32V003 Segment LCD
 
-Efficient Segment LCD driver by the low-cost MCU CH32V003.
+Efficient segment LCD driver for the low-cost MCU CH32V003.
 
 ![Breadboard](./Images/CH32V003%20Segment%20LCD%20-%20Breadboard.jpeg)
 
-## TN Positive 3-Digits Segment LCD Panel
+## TN Positive 3-Digit Segment LCD Panel
 
-I found these LCD panels from [AliExpress](https://www.aliexpress.com/item/1005005697772193.html).
+I found these LCD panels on [AliExpress](https://www.aliexpress.com/item/1005005697772193.html).
 
-### Specification
+### Specifications
 
-10PIN TN Positive 3-Digits Segment LCD Panel 3.0V Digital Tube Display
+10-pin TN Positive 3-Digit Segment LCD Panel, 3.0V Digital Tube Display
 
-1. **Dimensions**: 11.5x10.3/6.3x2MM, 10 pins.
-2. **Conductive glass thickness**: 0.7mm
-3. **Minimum pixel gap**: 10um
-4. **Duty ratio**: 1/4duty 1/2BIAS
-5. **Voltage**: 3.0V
-6. **Working temperature**: -0 degrees to +50 degrees
-7. **Viewing direction**: 6 points
+1. **Dimensions**: 11.5×10.3/6.3×2 mm, 10 pins
+2. **Conductive glass thickness**: 0.7 mm
+3. **Minimum pixel gap**: 10 μm
+4. **Duty ratio**: 1/4 duty, 1/2 bias
+5. **Voltage**: 3.0 V
+6. **Operating temperature**: 0°C to +50°C
+7. **Viewing direction**: 6 o'clock
 8. **Connection method**: metal pin
-9. TN type viewing range 60 degrees. Reflection.
+9. **TN type viewing range**: 60°, reflective
 
 ![LCD Panel Dimension](./Images/LCD%20Panel%20Dimension.png)
 
 ### LCD Multiplex
 
-![LCd Panel](./Images/LCD%20Panel.png)
+![LCD Panel](./Images/LCD%20Panel.png)
 
-It is the same as the [Glass LCD Products from Pacific Display](https://www.pacificdisplay.com/lcd_multiplex_drive.htm).
+This is the same as the [Glass LCD Products from Pacific Display](https://www.pacificdisplay.com/lcd_multiplex_drive.htm).
 
 ![LCD Multiplex](./Images/Pacific%20Display%20LCD%20Multiplex.gif)
 
@@ -41,7 +41,7 @@ It is the same as the [Glass LCD Products from Pacific Display](https://www.paci
 
 ### LCD Timing Diagram
 
-![LCD Timing Diagram](./Charts/LCD%20Timing%20Diagram.svg)
+![LCD Timing Diagram](./Charts/LCD%20Timing%20Diagram.png)
 
 ## References
 
