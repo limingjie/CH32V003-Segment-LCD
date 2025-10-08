@@ -75,7 +75,7 @@ static const uint8_t digit_segments[37] = {
 static const uint8_t com_pins[4]  = {PIN_COM4, PIN_COM3, PIN_COM2, PIN_COM1};
 volatile uint8_t     com_masks[4] = {0, 0, 0, 0};
 
-void calculate_com_masks(uint8_t seg2, uint8_t seg1, uint8_t seg0)
+void calculate_com_masks(uint8_t d1_segs, uint8_t d2_segs, uint8_t d3_segs)
 {
     // Convert from 0bFAGBECD to com_masks
     //       D1 D2 D3
@@ -84,42 +84,42 @@ void calculate_com_masks(uint8_t seg2, uint8_t seg1, uint8_t seg0)
     // COM3: GB GB GB
     // COM2: EC EC EC
     // COM1: D0 D0 D0
-    com_masks[0] = (((seg2 >> 5) & 0x03) << 4) | (((seg1 >> 5) & 0x03) << 2) | ((seg0 >> 5) & 0x03);  // COM4: FA bits
-    com_masks[1] = (((seg2 >> 3) & 0x03) << 4) | (((seg1 >> 3) & 0x03) << 2) | ((seg0 >> 3) & 0x03);  // COM3: GB bits
-    com_masks[2] = (((seg2 >> 1) & 0x03) << 4) | (((seg1 >> 1) & 0x03) << 2) | ((seg0 >> 1) & 0x03);  // COM2: EC bits
-    com_masks[3] = (((seg2 << 1) & 0x03) << 4) | (((seg1 << 1) & 0x03) << 2) | ((seg0 << 1) & 0x03);  // COM1: D  bits
+    com_masks[0] = ((d1_segs & 0x60) >> 1) | ((d2_segs & 0x60) >> 3) | ((d3_segs & 0x60) >> 5);  // COM4: FA bits
+    com_masks[1] = ((d1_segs & 0x18) << 1) | ((d2_segs & 0x18) >> 1) | ((d3_segs & 0x18) >> 3);  // COM3: GB bits
+    com_masks[2] = ((d1_segs & 0x06) << 3) | ((d2_segs & 0x06) << 1) | ((d3_segs & 0x06) >> 1);  // COM2: EC bits
+    com_masks[3] = ((d1_segs & 0x01) << 5) | ((d2_segs & 0x01) << 3) | ((d3_segs & 0x01) << 1);  // COM1: D  bits
 }
 
 void show_number(uint16_t number, uint8_t base)
 {
-    uint8_t seg0 = digit_segments[number % base];  // D3
+    uint8_t d3_segs = digit_segments[number % base];  // D3
     number /= base;
-    uint8_t seg1 = digit_segments[number % base];  // D2
+    uint8_t d2_segs = digit_segments[number % base];  // D2
     number /= base;
-    uint8_t seg2 = digit_segments[number % base];  // D1
+    uint8_t d1_segs = digit_segments[number % base];  // D1
 
-    calculate_com_masks(seg2, seg1, seg0);
+    calculate_com_masks(d1_segs, d2_segs, d3_segs);
 }
 
 void show_string(const char* str)
 {
-    uint8_t segments[3] = {0, 0, 0};  // D3, D2, D1
+    uint8_t segs[3] = {0, 0, 0};  // D1, D2, D3
 
     for (int i = 0; i < 3; i++)
     {
         char c = str[i];
 
         if (c >= '0' && c <= '9')
-            segments[i] = digit_segments[c - '0'];
+            segs[i] = digit_segments[c - '0'];
         else if (c == ' ')
-            segments[i] = digit_segments[10];
+            segs[i] = digit_segments[10];
         else if (c >= 'A' && c <= 'Z')
-            segments[i] = digit_segments[c - 'A' + 11];
+            segs[i] = digit_segments[c - 'A' + 11];
         else if (c >= 'a' && c <= 'z')
-            segments[i] = digit_segments[c - 'a' + 11];
+            segs[i] = digit_segments[c - 'a' + 11];
     }
 
-    calculate_com_masks(segments[0], segments[1], segments[2]);
+    calculate_com_masks(segs[0], segs[1], segs[2]);
 }
 
 void systick_init(void)
