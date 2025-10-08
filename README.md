@@ -63,16 +63,20 @@ while (1)
         uint8_t mask     = com_masks[i];
         uint8_t inv_mask = ~mask & 0x3F;  // Keep lower 6 bits for PC0-PC5
         uint8_t com_pin  = com_pins[i];
+
         // COM - Output
         funPinMode(com_pin, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+
         // COM - High, SEG1-6 - Low as required
         funDigitalWrite(com_pin, FUN_HIGH);
         GPIOC->BSHR = (mask << 16) | inv_mask;
         Delay_Ms(2);
+
         // COM - Low, SEG1-6 - High as required
         funDigitalWrite(com_pin, FUN_LOW);
         GPIOC->BSHR = mask | (inv_mask << 16);
         Delay_Ms(2);
+
         // COM - Float
         funPinMode(com_pin, GPIO_CNF_IN_FLOATING);
     }
