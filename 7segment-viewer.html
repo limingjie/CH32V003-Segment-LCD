@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>7-Segment Display Characters</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                background: #f5f5f5;
+                color: #333;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            h1 {
+                text-align: center;
+                color: #1976d2;
+                margin-bottom: 10px;
+            }
+
+            .subtitle {
+                text-align: center;
+                color: #666;
+                margin-bottom: 30px;
+                font-size: 14px;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .segment-container {
+                background: #fff;
+                border-radius: 8px;
+                padding: 10px;
+                text-align: center;
+                border: 1px solid #ddd;
+                position: relative;
+            }
+
+            .top-labels {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 6px;
+                height: 16px;
+            }
+
+            .index-label {
+                font-weight: bold;
+                color: #666;
+                font-size: 16px;
+                font-family: "Courier New", monospace;
+            }
+
+            .char-label {
+                font-weight: bold;
+                color: #1976d2;
+                font-size: 16px;
+                font-family: "Courier New", monospace;
+            }
+
+            .char-label.space-indicator {
+                font-size: 12px;
+                color: #999;
+                font-weight: normal;
+            }
+
+            .hex-label {
+                font-size: 12px;
+                color: #666;
+                margin-bottom: 10px;
+                font-family: "Courier New", monospace;
+            }
+
+            .seven-segment {
+                width: 50px;
+                height: 65px;
+                margin: 0 auto;
+                position: relative;
+            }
+
+            .segment {
+                position: absolute;
+                background: #ddd;
+                transition: background 0.3s;
+            }
+
+            .segment.on {
+                background: #1976d2;
+                box-shadow: 0 0 10px #1976d2;
+            }
+
+            /* Segment A (top) */
+            .seg-a {
+                top: 2px;
+                left: 7px;
+                width: 36px;
+                height: 5px;
+                clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            }
+
+            /* Segment B (top right) */
+            .seg-b {
+                top: 7px;
+                right: 2px;
+                width: 5px;
+                height: 25px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+            }
+
+            /* Segment C (bottom right) */
+            .seg-c {
+                bottom: 7px;
+                right: 2px;
+                width: 5px;
+                height: 25px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+            }
+
+            /* Segment D (bottom) */
+            .seg-d {
+                bottom: 2px;
+                left: 7px;
+                width: 36px;
+                height: 5px;
+                clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%);
+            }
+
+            /* Segment E (bottom left) */
+            .seg-e {
+                bottom: 7px;
+                left: 2px;
+                width: 5px;
+                height: 25px;
+                clip-path: polygon(0% 10%, 100% 0%, 100% 100%, 0% 90%);
+            }
+
+            /* Segment F (top left) */
+            .seg-f {
+                top: 7px;
+                left: 2px;
+                width: 5px;
+                height: 25px;
+                clip-path: polygon(0% 10%, 100% 0%, 100% 100%, 0% 90%);
+            }
+
+            /* Segment G (middle) */
+            .seg-g {
+                top: 30px;
+                left: 7px;
+                width: 36px;
+                height: 5px;
+                clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            }
+
+            .bit-pattern {
+                font-family: "Courier New", monospace;
+                font-size: 11px;
+                color: #666;
+                margin-top: 6px;
+            }
+
+            .hex-pattern {
+                font-family: "Courier New", monospace;
+                font-size: 11px;
+                color: #666;
+                margin-top: 2px;
+            }
+
+            .legend {
+                background: #fff;
+                border-radius: 8px;
+                padding: 20px;
+                border: 1px solid #ddd;
+                margin-bottom: 30px;
+                min-width: 1150px;
+            }
+
+            .legend h3 {
+                color: #1976d2;
+                margin-top: 0;
+            }
+
+            .legend-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .ic-package {
+                position: relative;
+                background: linear-gradient(145deg, #f5f5f5, #e8e8e8);
+                border: 2px solid #ccc;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+                min-width: 570px;
+                min-height: 375px; /* Increased from 250px to 375px (1.5x taller) */
+                transform: scale(0.8);
+            }
+
+            .lcd-screen {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 546px;
+                height: 216px;
+                background: linear-gradient(135deg, #b8e8b8, #c8f0c8, #d8f8d8);
+                border: 4px solid #000;
+                border-radius: 6px;
+                box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1), inset 0 0 40px rgba(120, 220, 120, 0.25),
+                    0 2px 8px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1;
+            }
+
+            .lcd-screen::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(45deg, transparent 30%, rgba(100, 255, 100, 0.03) 50%, transparent 70%);
+                border-radius: 3px;
+                pointer-events: none;
+            }
+
+            .pin {
+                position: absolute;
+                width: 90px;
+                height: 80px;
+                background: linear-gradient(145deg, #d4d4d4, #b8b8b8);
+                border: 1px solid #999;
+                border-radius: 1px;
+            }
+
+            /* Bottom pins (1-5, left to right) */
+            .pin-1 {
+                bottom: -9px;
+                left: 20px;
+            }
+            .pin-2 {
+                bottom: -9px;
+                left: 130px;
+            }
+            .pin-3 {
+                bottom: -9px;
+                left: 240px;
+            }
+            .pin-4 {
+                bottom: -9px;
+                left: 350px;
+            }
+            .pin-5 {
+                bottom: -9px;
+                left: 460px;
+            }
+
+            /* Top pins (10-6, left to right) */
+            .pin-10 {
+                top: -9px;
+                left: 20px;
+            }
+            .pin-9 {
+                top: -9px;
+                left: 130px;
+            }
+            .pin-8 {
+                top: -9px;
+                left: 240px;
+            }
+            .pin-7 {
+                top: -9px;
+                left: 350px;
+            }
+            .pin-6 {
+                top: -9px;
+                left: 460px;
+            }
+
+            .pin-notch {
+                position: absolute;
+                top: 50%;
+                right: -2px;
+                transform: translateY(-50%);
+                width: 4px;
+                height: 12px;
+                background: #666;
+                border-radius: 6px 0 0 6px;
+            }
+
+            .pin-label {
+                position: absolute;
+                font-size: 22px;
+                color: #333;
+                font-weight: bold;
+                font-family: "Courier New", monospace;
+                white-space: nowrap;
+                text-align: center;
+                transform: translateX(-50%); /* Center align relative to pin */
+            }
+
+            .pin-number {
+                display: inline-block;
+                width: 28px;
+                height: 28px;
+                line-height: 28px;
+                border-radius: 50%;
+                background: #1976d2;
+                color: white;
+                font-size: 16px;
+                margin: 2px 0;
+            }
+
+            /* Additional spacing for pin numbers on top pins (6-10) */
+            .pin-label-6 .pin-number,
+            .pin-label-7 .pin-number,
+            .pin-label-8 .pin-number,
+            .pin-label-9 .pin-number,
+            .pin-label-10 .pin-number {
+                margin-top: 12px; /* 10px extra space + 2px original = 12px (5px less, moving away from top pins) */
+            }
+
+            /* Additional spacing for pin numbers on bottom pins (1-5) */
+            .pin-label-1 .pin-number,
+            .pin-label-2 .pin-number,
+            .pin-label-3 .pin-number,
+            .pin-label-4 .pin-number,
+            .pin-label-5 .pin-number {
+                margin-bottom: 12px; /* 10px extra space + 2px original = 12px (5px less, moving away from bottom pins) */
+            }
+
+            .pin-function {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+
+            .pin-function.seg {
+                background: #ff8800; /* Orange for SEG pins */
+                color: white;
+            }
+
+            .pin-function.com1 {
+                background-color: #ff6b9d; /* Pink/Red for COM1 (group-d) */
+                color: white; /* White text for COM blocks */
+            }
+
+            .pin-function.com2 {
+                background-color: #00d4aa; /* Teal/Green for COM2 (group-ec) */
+                color: white; /* White text for COM blocks */
+            }
+
+            .pin-function.com3 {
+                background-color: #667eea; /* Blue for COM3 (group-gb) */
+                color: white; /* White text for COM blocks */
+            }
+
+            .pin-function.com4 {
+                background-color: #feca57; /* Yellow for COM4 (group-fa) */
+                color: white; /* White text for COM blocks */
+            }
+
+            /* Top pin labels - centered on pins */
+            .pin-label-10 {
+                top: -85px; /* Moved 5px back: -90px + 5px */
+                left: 65px; /* Pin center: 20px + 45px (half pin width) */
+            }
+            .pin-label-9 {
+                top: -85px; /* Moved 5px back: -90px + 5px */
+                left: 175px; /* Pin center: 130px + 45px */
+            }
+            .pin-label-8 {
+                top: -85px; /* Moved 5px back: -90px + 5px */
+                left: 285px; /* Pin center: 240px + 45px */
+            }
+            .pin-label-7 {
+                top: -85px; /* Moved 5px back: -90px + 5px */
+                left: 395px; /* Pin center: 350px + 45px */
+            }
+            .pin-label-6 {
+                top: -85px; /* Moved 5px back: -90px + 5px */
+                left: 505px; /* Pin center: 460px + 45px */
+            }
+
+            /* Bottom pin labels - centered on pins */
+            .pin-label-1 {
+                bottom: -85px; /* Moved 5px back: -90px + 5px */
+                left: 65px; /* Pin center: 20px + 45px */
+            }
+            .pin-label-2 {
+                bottom: -85px; /* Moved 5px back: -90px + 5px */
+                left: 175px; /* Pin center: 130px + 45px */
+            }
+            .pin-label-3 {
+                bottom: -85px; /* Moved 5px back: -90px + 5px */
+                left: 285px; /* Pin center: 240px + 45px */
+            }
+            .pin-label-4 {
+                bottom: -85px; /* Moved 5px back: -90px + 5px */
+                left: 395px; /* Pin center: 350px + 45px */
+            }
+            .pin-label-5 {
+                bottom: -85px; /* Moved 5px back: -90px + 5px */
+                left: 505px; /* Pin center: 460px + 45px */
+            }
+
+            .legend-diagram {
+                position: relative;
+                z-index: 1;
+            }
+
+            .display-row {
+                display: flex;
+                align-items: center;
+                gap: 0px;
+            }
+
+            .demo-section {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                margin-left: 30px;
+                padding: 15px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.03);
+            }
+
+            .demo-letters {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .demo-letter {
+                text-align: center;
+            }
+
+            .demo-char {
+                font-size: 28px;
+                color: #333;
+                margin-bottom: 5px;
+                position: absolute;
+                top: calc(35% - 30px);
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 10;
+                font-weight: bold;
+            }
+
+            .demo-seven-segment {
+                width: 40px;
+                height: 50px;
+                margin: 0 auto;
+                position: relative;
+            }
+
+            .demo-seven-segment .segment {
+                position: absolute;
+                background: #ddd;
+                transition: background 0.3s;
+            }
+
+            .demo-seven-segment .segment.on {
+                background: #1976d2;
+                box-shadow: 0 0 5px #1976d2;
+            }
+
+            .demo-seven-segment .seg-a {
+                top: 1px;
+                left: 5px;
+                width: 30px;
+                height: 4px;
+                clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            }
+
+            .demo-seven-segment .seg-b {
+                top: 5px;
+                right: 1px;
+                width: 4px;
+                height: 20px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+            }
+
+            .demo-seven-segment .seg-c {
+                bottom: 5px;
+                right: 1px;
+                width: 4px;
+                height: 20px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+            }
+
+            .demo-seven-segment .seg-d {
+                bottom: 1px;
+                left: 5px;
+                width: 30px;
+                height: 4px;
+                clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%);
+            }
+
+            .demo-seven-segment .seg-e {
+                bottom: 5px;
+                left: 1px;
+                width: 4px;
+                height: 20px;
+                clip-path: polygon(0% 10%, 100% 0%, 100% 100%, 0% 90%);
+            }
+
+            .demo-seven-segment .seg-f {
+                top: 5px;
+                left: 1px;
+                width: 4px;
+                height: 20px;
+                clip-path: polygon(0% 10%, 100% 0%, 100% 100%, 0% 90%);
+            }
+
+            .demo-seven-segment .seg-g {
+                top: 23px;
+                left: 5px;
+                width: 30px;
+                height: 4px;
+                clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            }
+
+            .binary-display {
+                font-family: "Courier New", monospace;
+                font-size: 12px;
+            }
+
+            .binary-header {
+                color: #ccc;
+                margin-bottom: 8px;
+                text-align: center;
+            }
+
+            .binary-matrix {
+                display: grid;
+                grid-template-columns: auto repeat(3, 1fr);
+                gap: 2px;
+                border: 1px solid #444;
+                border-radius: 4px;
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.02);
+            }
+
+            .binary-com-label {
+                color: #aaa;
+                font-size: 10px;
+                padding: 2px 4px;
+                text-align: right;
+            }
+
+            .binary-digit-header {
+                color: #ccc;
+                font-size: 10px;
+                font-weight: bold;
+                text-align: center;
+                padding: 2px;
+            }
+
+            .binary-cell {
+                font-size: 11px;
+                text-align: center;
+                padding: 2px 4px;
+                border-radius: 2px;
+                min-width: 16px;
+            }
+
+            .legend-diagram {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                display: flex;
+                gap: 8px; /* Reduced from 15px to 8px */
+                align-items: center;
+                z-index: 2; /* Above LCD screen */
+            }
+
+            .com-mapping {
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 3px;
+                flex: 1;
+            }
+
+            .segment-matrix {
+                width: 100%;
+                min-width: 500px;
+                border-collapse: collapse;
+                font-family: "Courier New", monospace;
+            }
+
+            .segment-matrix th {
+                font-size: 14px;
+                color: #1976d2;
+                font-weight: bold;
+                text-align: center;
+                padding: 3px 10px;
+                border-bottom: 2px solid #ddd;
+                background: rgba(25, 118, 210, 0.1);
+            }
+
+            .segment-matrix td {
+                padding: 6px 10px;
+                text-align: center;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                font-size: 14px;
+            }
+
+            .segment-matrix .com-label {
+                text-align: center;
+                width: 45px;
+                min-width: 45px;
+                max-width: 45px;
+            }
+
+            .segment-matrix .com-label .group-fa {
+                color: white; /* White text for COM blocks */
+                background-color: #feca57;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .segment-matrix .com-label .group-gb {
+                color: white; /* White text for COM blocks */
+                background-color: #667eea;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .segment-matrix .com-label .group-ec {
+                color: white; /* White text for COM blocks */
+                background-color: #00d4aa;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .segment-matrix .com-label .group-d {
+                color: white; /* White text for COM blocks */
+                background-color: #ff6b9d;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .segment-matrix .seg-header {
+                color: white; /* White text for SEG headers */
+                background-color: #ff8800; /* Orange background like SEG pins */
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .segment-matrix .lcd-segment-label {
+                color: #333;
+                font-weight: bold;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .segment-matrix .lcd-segment-label .mini-seven-segment {
+                margin: 0 auto;
+                transform: scale(1);
+            }
+
+            .segment-matrix .lcd-segments-row {
+                border-bottom: none; /* Remove separator line */
+            }
+
+            .segment-matrix .lcd-segments-row th {
+                border-bottom: none !important; /* Remove border from LCD segment header cells */
+            }
+
+            .segment-matrix .segment-cell {
+                color: #333;
+                font-weight: bold;
+                background: rgba(0, 0, 0, 0.02);
+                white-space: nowrap;
+                min-width: 50px;
+            }
+
+            .segment-matrix .segment-cell.empty {
+                color: #333;
+                background: rgba(0, 0, 0, 0.02);
+            }
+
+            .segment-cell.different-value {
+                background: #e3f2fd !important;
+            }
+
+            .segment-cell.same-value {
+                background: #f5f5f5 !important;
+                color: #999 !important;
+            }
+
+            .segment-cell.same-value .group-fa,
+            .segment-cell.same-value .group-gb,
+            .segment-cell.same-value .group-ec,
+            .segment-cell.same-value .group-d {
+                background-color: #ccc !important;
+                color: white !important; /* White text for group labels */
+            }
+
+            .segment-cell.same-value .bit {
+                background-color: #ddd !important;
+                color: #999 !important;
+            }
+
+            .bit-pattern-matrix .zero-value {
+                background: #f5f5f5 !important;
+                color: #999 !important;
+            }
+
+            .bit-pattern-matrix .zero-value .group-fa,
+            .bit-pattern-matrix .zero-value .group-gb,
+            .bit-pattern-matrix .zero-value .group-ec,
+            .bit-pattern-matrix .zero-value .group-d {
+                background-color: #ccc !important;
+                color: #666 !important;
+            }
+
+            .bit-pattern-matrix .zero-value .bit-value {
+                background-color: #ddd !important;
+                color: #999 !important;
+            }
+
+            .bit-pattern-matrix .one-value {
+                background: #e3f2fd !important;
+            }
+
+            .high-low-label {
+                font-size: 11px;
+                color: #333;
+                font-weight: 500;
+                text-align: center;
+                background: rgba(0, 0, 0, 0.05);
+                padding: 2px 4px;
+                border-radius: 2px;
+                vertical-align: middle;
+            }
+
+            .matrix-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 5px;
+            }
+
+            .matrix-header-spacer {
+                min-width: 50px;
+            }
+
+            .matrix-digit-headers {
+                display: flex;
+                gap: 3px;
+                margin-left: 5px;
+            }
+
+            .matrix-digit-header {
+                font-size: 12px;
+                color: #ccc;
+                font-weight: bold;
+                min-width: 24px;
+                text-align: center;
+                padding: 2px 4px;
+            }
+
+            .com-line {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 4px 8px;
+                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .com-label {
+                color: #aaa;
+                min-width: 50px;
+            }
+
+            .digit-bits {
+                display: flex;
+                gap: 3px;
+                align-items: center;
+                margin-left: 5px;
+            }
+
+            .digit-bit {
+                font-size: 12px;
+                font-weight: bold;
+                padding: 2px 4px;
+                border-radius: 2px;
+                background: rgba(255, 255, 255, 0.15);
+                min-width: 16px;
+                text-align: center;
+            }
+
+            .arrow {
+                color: #888;
+                margin: 0 5px;
+            }
+
+            .legend-seven-segment {
+                width: 180px;
+                height: 225px;
+                margin: 0 auto;
+                position: relative;
+                transform: scale(0.8);
+            }
+
+            .legend-seven-segment .segment {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 18px;
+                color: white; /* Make all segment text white */
+            }
+
+            /* Color groups: D, EC, GB, FA */
+            .legend-seven-segment .seg-d {
+                background: #1976d2; /* Blue background for all colored segments */
+                color: #ff6b9d; /* Pink text for group-d */
+            }
+            .legend-seven-segment .seg-e,
+            .legend-seven-segment .seg-c {
+                background: #1976d2; /* Blue background for all colored segments */
+                color: #00d4aa; /* Green text for group-ec */
+            }
+            .legend-seven-segment .seg-g,
+            .legend-seven-segment .seg-b {
+                background: #1976d2; /* Blue background for all colored segments */
+                color: #667eea; /* Blue text for group-gb */
+            }
+            .legend-seven-segment .seg-f,
+            .legend-seven-segment .seg-a {
+                background: #1976d2; /* Blue background for all colored segments */
+                color: #feca57; /* Yellow text for group-fa */
+            }
+
+            .legend-seven-segment .seg-a {
+                top: 7.5px;
+                left: 22.5px;
+                width: 135px;
+                height: 18px;
+                clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+            }
+            .legend-seven-segment .seg-b {
+                top: 25.5px;
+                right: 7.5px;
+                width: 18px;
+                height: 82.5px;
+                clip-path: polygon(0% 0%, 100% 15%, 100% 85%, 0% 100%);
+            }
+            .legend-seven-segment .seg-c {
+                bottom: 25.5px;
+                right: 7.5px;
+                width: 18px;
+                height: 82.5px;
+                clip-path: polygon(0% 0%, 100% 15%, 100% 85%, 0% 100%);
+            }
+            .legend-seven-segment .seg-d {
+                bottom: 7.5px;
+                left: 22.5px;
+                width: 135px;
+                height: 18px;
+                clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%);
+            }
+            .legend-seven-segment .seg-e {
+                bottom: 25.5px;
+                left: 7.5px;
+                width: 18px;
+                height: 82.5px;
+                clip-path: polygon(0% 15%, 100% 0%, 100% 100%, 0% 85%);
+            }
+            .legend-seven-segment .seg-f {
+                top: 25.5px;
+                left: 7.5px;
+                width: 18px;
+                height: 82.5px;
+                clip-path: polygon(0% 15%, 100% 0%, 100% 100%, 0% 85%);
+            }
+            .legend-seven-segment .seg-g {
+                top: 103.5px;
+                left: 22.5px;
+                width: 135px;
+                height: 18px;
+                clip-path: polygon(15% 0%, 85% 0%, 100% 50%, 85% 100%, 15% 100%, 0% 50%);
+            }
+
+            .legend-labels {
+                font-family: "Courier New", monospace;
+                font-size: 14px;
+                line-height: 2;
+                text-align: center;
+            }
+
+            .bit-order {
+                font-weight: bold;
+                font-size: 20px;
+                color: #aaa;
+                padding: 8px;
+                border-radius: 3px;
+                background: rgba(255, 255, 255, 0.1);
+                font-family: "Courier New", monospace;
+                width: 32px;
+                text-align: center;
+                display: inline-block;
+            }
+
+            .bit-groups {
+                display: flex;
+                gap: 5px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .bit {
+                padding: 3px;
+                background: rgba(255, 255, 255, 0.1);
+                justify-content: center;
+                align-items: center;
+            }
+
+            .bit-display {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .bit-group {
+                font-size: 20px;
+                font-weight: bold;
+                padding: 8px;
+                border-radius: 3px;
+                background: rgba(255, 255, 255, 0.1);
+                font-family: "Courier New", monospace;
+                width: 32px;
+                text-align: center;
+                display: inline-block;
+            }
+
+            .group-d {
+                color: #ff6b9d;
+            }
+            .group-ec {
+                color: #00d4aa;
+            }
+            .group-gb {
+                color: #667eea;
+            }
+            .group-fa {
+                color: #feca57;
+            }
+
+            .segment-matrix tr.group-fa .segment-cell {
+                color: #feca57;
+            }
+            .segment-matrix tr.group-fa .segment-cell .group-fa {
+                color: white; /* White text for group labels */
+                background-color: #feca57;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .segment-matrix tr.group-fa .high-low-label {
+                border-right: 4px solid #feca57;
+            }
+            .segment-matrix tr.group-gb .segment-cell {
+                color: #667eea;
+            }
+            .segment-matrix tr.group-gb .segment-cell .group-gb {
+                color: #fff;
+                background-color: #667eea;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .segment-matrix tr.group-gb .high-low-label {
+                border-right: 4px solid #667eea;
+            }
+            .segment-matrix tr.group-ec .segment-cell {
+                color: #00d4aa;
+            }
+            .segment-matrix tr.group-ec .segment-cell .group-ec {
+                color: white; /* White text for group labels */
+                background-color: #00d4aa;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .segment-matrix tr.group-ec .high-low-label {
+                border-right: 4px solid #00d4aa;
+            }
+            .segment-matrix tr.group-d .segment-cell {
+                color: #ff6b9d;
+            }
+            .segment-matrix tr.group-d .segment-cell .group-d {
+                color: white; /* White text for group labels */
+                background-color: #ff6b9d;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .segment-matrix tr.group-d .high-low-label {
+                border-right: 4px solid #ff6b9d;
+            }
+
+            .segment-matrix .bit {
+                background-color: #e0e0e0;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .segment-matrix tr.group-fa .bit {
+                color: #f57c00;
+            }
+
+            .segment-matrix tr.group-gb .bit {
+                color: #1976d2;
+            }
+
+            .segment-matrix tr.group-ec .bit {
+                color: #388e3c;
+            }
+
+            .segment-matrix tr.group-d .bit {
+                color: #d32f2f;
+            }
+
+            .bit-pattern-matrix {
+                width: 100%;
+                min-width: 450px;
+                border-collapse: collapse;
+                font-family: "Courier New", monospace;
+                margin-bottom: 15px;
+            }
+
+            .bit-pattern-matrix th {
+                font-size: 14px;
+                color: #1976d2;
+                font-weight: bold;
+                text-align: center;
+                padding: 6px 10px;
+                border-bottom: 2px solid #ddd;
+                background: rgba(25, 118, 210, 0.1);
+            }
+
+            .bit-pattern-matrix td {
+                padding: 1px 10px;
+                text-align: center;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                font-size: 14px;
+            }
+
+            .bit-pattern-matrix .char-label {
+                color: #f57c00;
+                font-weight: bold;
+                text-align: center;
+                background: white;
+                border-right: 2px solid #ddd;
+            }
+
+            .mini-seven-segment {
+                width: 25px;
+                height: 32px;
+                position: relative;
+                margin: 0 auto;
+            }
+
+            .mini-seven-segment .segment {
+                position: absolute;
+                transition: background 0.3s;
+            }
+
+            .mini-seven-segment .seg-a {
+                top: 1px;
+                left: 3px;
+                width: 19px;
+                height: 3px;
+                clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            }
+
+            .mini-seven-segment .seg-b {
+                top: 3px;
+                right: 1px;
+                width: 3px;
+                height: 12px;
+                clip-path: polygon(0% 10%, 100% 0%, 100% 90%, 0% 100%);
+            }
+
+            .mini-seven-segment .seg-c {
+                bottom: 3px;
+                right: 1px;
+                width: 3px;
+                height: 12px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+            }
+
+            .mini-seven-segment .seg-d {
+                bottom: 1px;
+                left: 3px;
+                width: 19px;
+                height: 3px;
+                clip-path: polygon(0% 0%, 90% 0%, 100% 100%, 10% 100%);
+            }
+
+            .mini-seven-segment .seg-e {
+                bottom: 3px;
+                left: 1px;
+                width: 3px;
+                height: 12px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 100%, 0% 90%);
+            }
+
+            .mini-seven-segment .seg-f {
+                top: 3px;
+                left: 1px;
+                width: 3px;
+                height: 12px;
+                clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+            }
+
+            .mini-seven-segment .seg-g {
+                top: 50%;
+                left: 3px;
+                transform: translateY(-50%);
+                width: 19px;
+                height: 3px;
+                clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+            }
+
+            .bit-pattern-matrix .bit-cell {
+                font-weight: bold;
+                background: rgba(0, 0, 0, 0.02);
+            }
+
+            .bit-pattern-matrix .bit-value {
+                background-color: #e0e0e0;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            .bit-pattern-matrix .bit-cell.group-fa .bit-value {
+                color: #f57c00;
+            }
+
+            .bit-pattern-matrix .bit-cell.group-gb .bit-value {
+                color: #1976d2;
+            }
+
+            .bit-pattern-matrix .bit-cell.group-ec .bit-value {
+                color: #388e3c;
+            }
+
+            .bit-pattern-matrix .bit-cell.group-d .bit-value {
+                color: #d32f2f;
+            }
+
+            .bit-pattern-matrix th .group-fa {
+                color: #000;
+                background-color: #feca57;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .bit-pattern-matrix th .group-gb {
+                color: #fff;
+                background-color: #667eea;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .bit-pattern-matrix th .group-ec {
+                color: #000;
+                background-color: #00d4aa;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .bit-pattern-matrix th .group-d {
+                color: #000;
+                background-color: #ff6b9d;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .bit-pattern-matrix .binary-value {
+                color: #424242;
+                font-weight: bold;
+                font-family: "Courier New", monospace;
+                background: rgba(0, 0, 0, 0.05);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>3-Digit 7-Segment LCD</h1>
+
+            <div class="legend">
+                <h3>Segment Layout & Bit Order</h3>
+                <div class="legend-content">
+                    <div class="display-row">
+                        <div class="ic-package">
+                            <div class="pin pin-1"></div>
+                            <div class="pin pin-2"></div>
+                            <div class="pin pin-3"></div>
+                            <div class="pin pin-4"></div>
+                            <div class="pin pin-5"></div>
+                            <div class="pin pin-6"></div>
+                            <div class="pin pin-7"></div>
+                            <div class="pin pin-8"></div>
+                            <div class="pin pin-9"></div>
+                            <div class="pin pin-10"></div>
+                            <div class="pin-notch"></div>
+
+                            <!-- LCD Screen -->
+                            <div class="lcd-screen"></div>
+
+                            <!-- Pin labels -->
+                            <div class="pin-label pin-label-1">
+                                <span class="pin-number">1</span><br /><span class="pin-function seg">SEG1</span>
+                            </div>
+                            <div class="pin-label pin-label-2">
+                                <span class="pin-number">2</span><br /><span class="pin-function seg">SEG2</span>
+                            </div>
+                            <div class="pin-label pin-label-3">
+                                <span class="pin-number">3</span><br /><span class="pin-function seg">SEG3</span>
+                            </div>
+                            <div class="pin-label pin-label-4">
+                                <span class="pin-number">4</span><br /><span class="pin-function seg">SEG4</span>
+                            </div>
+                            <div class="pin-label pin-label-5">
+                                <span class="pin-number">5</span><br /><span class="pin-function seg">SEG5</span>
+                            </div>
+                            <div class="pin-label pin-label-6">
+                                <span class="pin-function seg">SEG6</span><br /><span class="pin-number">6</span>
+                            </div>
+                            <div class="pin-label pin-label-7">
+                                <span class="pin-function com4">COM4</span><br /><span class="pin-number">7</span>
+                            </div>
+                            <div class="pin-label pin-label-8">
+                                <span class="pin-function com3">COM3</span><br /><span class="pin-number">8</span>
+                            </div>
+                            <div class="pin-label pin-label-9">
+                                <span class="pin-function com2">COM2</span><br /><span class="pin-number">9</span>
+                            </div>
+                            <div class="pin-label pin-label-10">
+                                <span class="pin-function com1">COM1</span><br /><span class="pin-number">10</span>
+                            </div>
+                            <div class="legend-diagram">
+                                <div class="demo-letter">
+                                    <div class="legend-seven-segment">
+                                        <div class="segment seg-d">D</div>
+                                        <div class="segment seg-e">E</div>
+                                        <div class="segment seg-f">F</div>
+                                        <div class="segment seg-a" style="background: #ddd; color: white">A</div>
+                                        <div class="segment seg-b" style="background: #ddd; color: white">B</div>
+                                        <div class="segment seg-c" style="background: #ddd; color: white">C</div>
+                                        <div class="segment seg-g" style="background: #ddd; color: white">G</div>
+                                        <div class="demo-char">D1</div>
+                                    </div>
+                                </div>
+                                <div class="demo-letter">
+                                    <div class="legend-seven-segment">
+                                        <div class="segment seg-a">A</div>
+                                        <div class="segment seg-d">D</div>
+                                        <div class="segment seg-e">E</div>
+                                        <div class="segment seg-f">F</div>
+                                        <div class="segment seg-b" style="background: #ddd; color: white">B</div>
+                                        <div class="segment seg-c" style="background: #ddd; color: white">C</div>
+                                        <div class="segment seg-g" style="background: #ddd; color: white">G</div>
+                                        <div class="demo-char">D2</div>
+                                    </div>
+                                </div>
+                                <div class="demo-letter">
+                                    <div class="legend-seven-segment">
+                                        <div class="segment seg-b">B</div>
+                                        <div class="segment seg-c">C</div>
+                                        <div class="segment seg-d">D</div>
+                                        <div class="segment seg-e">E</div>
+                                        <div class="segment seg-g">G</div>
+                                        <div class="segment seg-a" style="background: #ddd; color: white">A</div>
+                                        <div class="segment seg-f" style="background: #ddd; color: white">F</div>
+                                        <div class="demo-char">D3</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="com-mapping">
+                            <table class="bit-pattern-matrix">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th><span class="group-fa">F</span></th>
+                                        <th><span class="group-fa">A</span></th>
+                                        <th><span class="group-gb">G</span></th>
+                                        <th><span class="group-gb">B</span></th>
+                                        <th><span class="group-ec">E</span></th>
+                                        <th><span class="group-ec">C</span></th>
+                                        <th><span class="group-d">D</span></th>
+                                        <th>Binary</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="char-label">
+                                            <div class="mini-seven-segment">
+                                                <div class="segment seg-a" style="background: #ddd"></div>
+                                                <div class="segment seg-b" style="background: #ddd"></div>
+                                                <div class="segment seg-c" style="background: #ddd"></div>
+                                                <div class="segment seg-d" style="background: #1976d2"></div>
+                                                <div class="segment seg-e" style="background: #1976d2"></div>
+                                                <div class="segment seg-f" style="background: #1976d2"></div>
+                                                <div class="segment seg-g" style="background: #ddd"></div>
+                                            </div>
+                                        </td>
+                                        <td class="bit-cell group-fa one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-fa zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-gb zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-gb zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-ec one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-ec zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-d one-value"><span class="bit-value">1</span></td>
+                                        <td class="binary-value">
+                                            0b<span class="group-fa">1</span><span class="group-fa">0</span
+                                            ><span class="group-gb">0</span><span class="group-gb">0</span
+                                            ><span class="group-ec">1</span><span class="group-ec">0</span
+                                            ><span class="group-d">1</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="char-label">
+                                            <div class="mini-seven-segment">
+                                                <div class="segment seg-a" style="background: #1976d2"></div>
+                                                <div class="segment seg-b" style="background: #ddd"></div>
+                                                <div class="segment seg-c" style="background: #ddd"></div>
+                                                <div class="segment seg-d" style="background: #1976d2"></div>
+                                                <div class="segment seg-e" style="background: #1976d2"></div>
+                                                <div class="segment seg-f" style="background: #1976d2"></div>
+                                                <div class="segment seg-g" style="background: #ddd"></div>
+                                            </div>
+                                        </td>
+                                        <td class="bit-cell group-fa one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-fa one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-gb zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-gb zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-ec one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-ec zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-d one-value"><span class="bit-value">1</span></td>
+                                        <td class="binary-value">
+                                            0b<span class="group-fa">1</span><span class="group-fa">1</span
+                                            ><span class="group-gb">0</span><span class="group-gb">0</span
+                                            ><span class="group-ec">1</span><span class="group-ec">0</span
+                                            ><span class="group-d">1</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="char-label">
+                                            <div class="mini-seven-segment">
+                                                <div class="segment seg-a" style="background: #ddd"></div>
+                                                <div class="segment seg-b" style="background: #1976d2"></div>
+                                                <div class="segment seg-c" style="background: #1976d2"></div>
+                                                <div class="segment seg-d" style="background: #1976d2"></div>
+                                                <div class="segment seg-e" style="background: #1976d2"></div>
+                                                <div class="segment seg-f" style="background: #ddd"></div>
+                                                <div class="segment seg-g" style="background: #1976d2"></div>
+                                            </div>
+                                        </td>
+                                        <td class="bit-cell group-fa zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-fa zero-value"><span class="bit-value">0</span></td>
+                                        <td class="bit-cell group-gb one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-gb one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-ec one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-ec one-value"><span class="bit-value">1</span></td>
+                                        <td class="bit-cell group-d one-value"><span class="bit-value">1</span></td>
+                                        <td class="binary-value">
+                                            0b<span class="group-fa">0</span><span class="group-fa">0</span
+                                            ><span class="group-gb">1</span><span class="group-gb">1</span
+                                            ><span class="group-ec">1</span><span class="group-ec">1</span
+                                            ><span class="group-d">1</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="segment-matrix">
+                                <thead>
+                                    <tr class="lcd-segments-row">
+                                        <th></th>
+                                        <th></th>
+                                        <th colspan="2" class="lcd-segment-label">
+                                            <div class="mini-seven-segment">
+                                                <div class="segment seg-a" style="background: #ddd"></div>
+                                                <div class="segment seg-b" style="background: #ddd"></div>
+                                                <div class="segment seg-c" style="background: #ddd"></div>
+                                                <div class="segment seg-d" style="background: #1976d2"></div>
+                                                <div class="segment seg-e" style="background: #1976d2"></div>
+                                                <div class="segment seg-f" style="background: #1976d2"></div>
+                                                <div class="segment seg-g" style="background: #ddd"></div>
+                                            </div>
+                                        </th>
+                                        <th colspan="2" class="lcd-segment-label">
+                                            <div class="mini-seven-segment">
+                                                <div class="segment seg-a" style="background: #1976d2"></div>
+                                                <div class="segment seg-b" style="background: #ddd"></div>
+                                                <div class="segment seg-c" style="background: #ddd"></div>
+                                                <div class="segment seg-d" style="background: #1976d2"></div>
+                                                <div class="segment seg-e" style="background: #1976d2"></div>
+                                                <div class="segment seg-f" style="background: #1976d2"></div>
+                                                <div class="segment seg-g" style="background: #ddd"></div>
+                                            </div>
+                                        </th>
+                                        <th colspan="2" class="lcd-segment-label">
+                                            <div class="mini-seven-segment">
+                                                <div class="segment seg-a" style="background: #ddd"></div>
+                                                <div class="segment seg-b" style="background: #1976d2"></div>
+                                                <div class="segment seg-c" style="background: #1976d2"></div>
+                                                <div class="segment seg-d" style="background: #1976d2"></div>
+                                                <div class="segment seg-e" style="background: #1976d2"></div>
+                                                <div class="segment seg-f" style="background: #ddd"></div>
+                                                <div class="segment seg-g" style="background: #1976d2"></div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th><span class="seg-header">SEG6</span></th>
+                                        <th><span class="seg-header">SEG5</span></th>
+                                        <th><span class="seg-header">SEG4</span></th>
+                                        <th><span class="seg-header">SEG3</span></th>
+                                        <th><span class="seg-header">SEG2</span></th>
+                                        <th><span class="seg-header">SEG1</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="group-fa">
+                                        <td class="com-label" rowspan="2"><span class="group-fa">COM4</span></td>
+                                        <td class="high-low-label">1</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-fa">F</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-fa">A</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-fa">F</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-fa">A</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-fa">F</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-fa">A</span> <span class="bit">1</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="group-fa">
+                                        <td class="high-low-label">0</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-fa">F</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-fa">A</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-fa">F</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-fa">A</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-fa">F</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-fa">A</span> <span class="bit">0</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="group-gb">
+                                        <td class="com-label" rowspan="2"><span class="group-gb">COM3</span></td>
+                                        <td class="high-low-label">1</td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">G</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">B</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">G</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">B</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-gb">G</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-gb">B</span> <span class="bit">0</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="group-gb">
+                                        <td class="high-low-label">0</td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">G</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">B</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">G</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-gb">B</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-gb">G</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-gb">B</span> <span class="bit">1</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="group-ec">
+                                        <td class="com-label" rowspan="2"><span class="group-ec">COM2</span></td>
+                                        <td class="high-low-label">1</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">E</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-ec">C</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">E</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-ec">C</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">E</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">C</span> <span class="bit">0</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="group-ec">
+                                        <td class="high-low-label">0</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">E</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-ec">C</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">E</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell same-value">
+                                            <span class="group-ec">C</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">E</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-ec">C</span> <span class="bit">1</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="group-d">
+                                        <td class="com-label" rowspan="2"><span class="group-d">COM1</span></td>
+                                        <td class="high-low-label">1</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-d">D</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell empty">_</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-d">D</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell empty">_</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-d">D</span> <span class="bit">0</span>
+                                        </td>
+                                        <td class="segment-cell empty">_</td>
+                                    </tr>
+                                    <tr class="group-d">
+                                        <td class="high-low-label">0</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-d">D</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell empty">_</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-d">D</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell empty">_</td>
+                                        <td class="segment-cell different-value">
+                                            <span class="group-d">D</span> <span class="bit">1</span>
+                                        </td>
+                                        <td class="segment-cell empty">_</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid" id="segmentGrid"></div>
+        </div>
+
+        <script>
+            // CH32V003 digit_segments array (bit order: 0bFAGBECD)
+            const digitSegments = [
+                0b1101111, // 0: ABCDEF_ = 1111110 -> 1101111
+                0b0001010, // 1: _BC____ = 0110000 -> 0001010
+                0b0111101, // 2: AB_DE_G = 1101101 -> 0111101
+                0b0111011, // 3: ABCD__G = 1111001 -> 0111011
+                0b1011010, // 4: _BC__FG = 0110011 -> 1011010
+                0b1110011, // 5: A_CD_FG = 1011011 -> 1110011
+                0b1110111, // 6: A_CDEFG = 1011111 -> 1110111
+                0b0101010, // 7: ABC____ = 1110000 -> 0101010
+                0b1111111, // 8: ABCDEFG = 1111111 -> 1111111
+                0b1111011, // 9: ABCD_FG = 1111011 -> 1111011
+                0b0000000, // (space)
+                0b1111110, // A: ABC_EFG = 111_111 -> 1111110
+                0b1010111, // b: __CDEFG = 0011111 -> 1010111
+                0b1100101, // C: A__DEF_ = 1001110 -> 1100101
+                0b0011111, // d: _BCDE_G = 0111101 -> 0011111
+                0b1110101, // E: A__DEFG = 1001111 -> 1110101
+                0b1110100, // F: A___EFG = 1000111 -> 1110100
+                0b1100111, // G: A_CDEF_ = 1011110 -> 1100111
+                0b1011110, // H: _BC_EFG = 0110111 -> 1011110
+                0b1000100, // I: ____EF_ = 0000110 -> 1000100
+                0b0001011, // J: _BCD___ = 0111000 -> 0001011
+                0b1110110, // K: A_C_EFG = 1010111 -> 1110110
+                0b1000101, // L: ___DEF_ = 0001110 -> 1000101
+                0b1101001, // M: AB_D_F_ = 1101010 -> 1101001
+                0b1101110, // N: ABC_EF_ = 1110110 -> 1101110
+                0b0010111, // o: __CDE_G = 0011101 -> 0010111
+                0b1111100, // P: AB__EFG = 1100111 -> 1111100
+                0b1111010, // q: ABC__FG = 1110011 -> 1111010
+                0b0010100, // r: ____E_G = 0000101 -> 0010100
+                0b1110011, // S: A_CD_FG = 1011011 -> 1110011
+                0b1010101, // t: ___DEFG = 0001111 -> 1010101
+                0b1001111, // U: _BCDEF_ = 0111110 -> 1001111
+                0b1001011, // V: _BCD_F_ = 0111010 -> 1001011
+                0b0100111, // W: A_CDE__ = 1011100 -> 0100111
+                0b0010001, // x: ___D__G = 0001001 -> 0010001
+                0b1011011, // y: _BCD_FG = 0111011 -> 1011011
+                0b0111101, // z: AB_DE_G = 1101101 -> 0111101
+            ];
+
+            const characters = [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                " ",
+                "A",
+                "b",
+                "C",
+                "d",
+                "E",
+                "F",
+                "G",
+                "H",
+                "I",
+                "J",
+                "K",
+                "L",
+                "M",
+                "N",
+                "o",
+                "P",
+                "q",
+                "r",
+                "S",
+                "t",
+                "U",
+                "V",
+                "W",
+                "x",
+                "y",
+                "z",
+            ];
+
+            function createSevenSegment(pattern) {
+                const container = document.createElement("div");
+                container.className = "seven-segment";
+
+                const segments = ["a", "b", "c", "d", "e", "f", "g"];
+                const segmentBits = [5, 3, 1, 0, 2, 6, 4]; // ABCDEFG -> bit positions in FAGBECD
+
+                segments.forEach((seg, index) => {
+                    const segmentDiv = document.createElement("div");
+                    segmentDiv.className = `segment seg-${seg}`;
+
+                    // Check if this segment should be on (bit order: 0bFAGBECD)
+                    const bitPosition = segmentBits[index];
+                    if (pattern & (1 << bitPosition)) {
+                        segmentDiv.classList.add("on");
+                    }
+
+                    container.appendChild(segmentDiv);
+                });
+
+                return container;
+            }
+
+            function formatBinary(num) {
+                return "0b" + num.toString(2).padStart(8, "0");
+            }
+
+            function formatHex(num) {
+                return "0x" + num.toString(16).toUpperCase().padStart(2, "0");
+            }
+
+            function renderSegments() {
+                const grid = document.getElementById("segmentGrid");
+
+                digitSegments.forEach((pattern, index) => {
+                    const container = document.createElement("div");
+                    container.className = "segment-container";
+
+                    const topLabels = document.createElement("div");
+                    topLabels.className = "top-labels";
+
+                    const indexLabel = document.createElement("div");
+                    indexLabel.className = "index-label";
+                    indexLabel.textContent = index.toString();
+
+                    const charLabel = document.createElement("div");
+                    charLabel.className = "char-label";
+                    if (characters[index] === " ") {
+                        charLabel.textContent = "(SPACE)";
+                        charLabel.classList.add("space-indicator");
+                    } else {
+                        charLabel.textContent = characters[index];
+                    }
+
+                    topLabels.appendChild(indexLabel);
+                    topLabels.appendChild(charLabel);
+
+                    const segment = createSevenSegment(pattern);
+
+                    const bitPattern = document.createElement("div");
+                    bitPattern.className = "bit-pattern";
+                    bitPattern.textContent = formatBinary(pattern);
+
+                    const hexPattern = document.createElement("div");
+                    hexPattern.className = "hex-pattern";
+                    hexPattern.textContent = formatHex(pattern);
+
+                    container.appendChild(topLabels);
+                    container.appendChild(segment);
+                    container.appendChild(bitPattern);
+                    container.appendChild(hexPattern);
+
+                    grid.appendChild(container);
+                });
+            }
+
+            // Initialize the display
+            renderSegments();
+        </script>
+    </body>
+</html>

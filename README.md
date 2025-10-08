@@ -10,7 +10,7 @@ I found these LCD panels on [AliExpress](https://www.aliexpress.com/item/1005005
 
 ### Specifications
 
-10-pin TN Positive 3-Digit Segment LCD Panel, 3.0V Digital Tube Display
+10-Pin TN Positive 3-Digit Segment LCD Panel, 3.0V Digital Tube Display
 
 1. **Dimensions**: 11.5×10.3/6.3×2 mm, 10 pins
 2. **Conductive glass thickness**: 0.7 mm
@@ -19,29 +19,34 @@ I found these LCD panels on [AliExpress](https://www.aliexpress.com/item/1005005
 5. **Voltage**: 3.0 V
 6. **Operating temperature**: 0°C to +50°C
 7. **Viewing direction**: 6 o'clock
-8. **Connection method**: metal pin
+8. **Connection method**: Metal pin
 9. **TN type viewing range**: 60°, reflective
 
 ![LCD Panel Dimension](./Images/LCD%20Panel%20Dimension.png)
 
 ### LCD Multiplex
 
-![LCD Panel](./Images/LCD%20Panel.png)
+- Each Common pin controls 1 or 2 segments across 3 characters.
+- Each Segment pin controls 3 or 4 segments within 1 character.
 
-This is the same as the [Glass LCD Products from Pacific Display](https://www.pacificdisplay.com/lcd_multiplex_drive.htm).
+
+![LCD Bit Mapping](./Images/LCD%20Bit%20Mapping.png)
+
+The wiring diagram of the LCD display (from [Pacific Display](https://www.pacificdisplay.com/lcd_multiplex_drive.htm)).
 
 ![LCD Multiplex](./Images/Pacific%20Display%20LCD%20Multiplex.gif)
 
-|          | SEG6  | SEG5  | SEG4  | SEG3  | SEG2  | SEG1  |
-| :------: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **COM4** |  1F   |  1A   |  2F   |  2A   |  3F   |  3A   |
-| **COM3** |  1G   |  1B   |  2G   |  2B   |  3G   |  3B   |
-| **COM2** |  1E   |  1C   |  2E   |  2C   |  3E   |  3C   |
-| **COM1** |  1D   |       |  2D   |       |  3D   |       |
-
 ### LCD Timing Diagram
 
+LCDs use AC signals to prevent damage and ensure longevity by avoiding DC-induced charge accumulation, which can permanently polarize and degrade the liquid crystal molecules.
+
+For a 1/2 bias LCD, the Common pins require 3 voltages: +V, +V/2, and 0. Use the following timing sequence to ensure the average voltage across the LCD is 0.
+
 ![LCD Timing Diagram](./Charts/LCD%20Timing%20Diagram.png)
+
+### LCD Characters
+
+![LCD Characters](./Images/LCD%20Characters.png)
 
 ## References
 
