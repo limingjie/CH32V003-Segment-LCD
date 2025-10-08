@@ -14,10 +14,10 @@
 //                   |           |
 //  COM1 2 3 4 SEG6  |           |             PC5  PC4  PC3  PC2  PC1  PC0
 //  10 | | | | | 6   |    -A-    |            SEG6 SEG5 SEG4 SEG3 SEG2 SEG1
-//    +---------+    |  F|   |B  |  PD4 COM4   1F   1A   2F   2A   3F   3A
-//    | D1 D2 D3|    |    -G-    |  PD5 COM3   1G   1B   2G   2B   3G   3B
-//    +---------+    |  E|   |C  |  PD6 COM2   1E   1C   2E   2C   3E   3C
-//   1 | | | | | 5   |    -D-    |  PD0 COM1   1D   __   2D   __   3D   __
+//    +---------+    |  F|   |B  |  PD0 COM1   1D   __   2D   __   3D   __
+//    | D1 D2 D3|    |    -G-    |  PD6 COM2   1E   1C   2E   2C   3E   3C
+//    +---------+    |  E|   |C  |  PD5 COM3   1G   1B   2G   2B   3G   3B
+//   1 | | | | | 5   |    -D-    |  PD4 COM4   1F   1A   2F   2A   3F   3A
 //  SEG1 2 3 4 5     |           |
 
 #define PIN_COM4 PD4
@@ -31,74 +31,75 @@
 #define PIN_SEG2 PC1
 #define PIN_SEG1 PC0
 
-// Segments bit order: 0bFAGBECD
-static const uint8_t digit_segments[37] = {
-    0b1101111,  // 0: ABCDEF_ = 1111110 -> 1101111
-    0b0001010,  // 1: _BC____ = 0110000 -> 0001010
-    0b0111101,  // 2: AB_DE_G = 1101101 -> 0111101
-    0b0111011,  // 3: ABCD__G = 1111001 -> 0111011
-    0b1011010,  // 4: _BC__FG = 0110011 -> 1011010
-    0b1110011,  // 5: A_CD_FG = 1011011 -> 1110011
-    0b1110111,  // 6: A_CDEFG = 1011111 -> 1110111
-    0b0101010,  // 7: ABC____ = 1110000 -> 0101010
+// Segments bit order: 0bDECGBFA
+static const uint8_t character_segments[37] = {
+    0b1110111,  // 0: ABCDEF_ = 1111110 -> 1110111
+    0b0010100,  // 1: _BC____ = 0110000 -> 0010100
+    0b1101101,  // 2: AB_DE_G = 1101101 -> 1101101
+    0b1011101,  // 3: ABCD__G = 1111001 -> 1011101
+    0b0011110,  // 4: _BC__FG = 0110011 -> 0011110
+    0b1011011,  // 5: A_CD_FG = 1011011 -> 1011011
+    0b1111011,  // 6: A_CDEFG = 1011111 -> 1111011
+    0b0010101,  // 7: ABC____ = 1110000 -> 0010101
     0b1111111,  // 8: ABCDEFG = 1111111 -> 1111111
-    0b1111011,  // 9: ABCD_FG = 1111011 -> 1111011
-    0b0000000,  // (space)
-    0b1111110,  // A: ABC_EFG = 111_111 -> 1111110
-    0b1010111,  // b: __CDEFG = 0011111 -> 1010111
-    0b1100101,  // C: A__DEF_ = 1001110 -> 1100101
-    0b0011111,  // d: _BCDE_G = 0111101 -> 0011111
-    0b1110101,  // E: A__DEFG = 1001111 -> 1110101
-    0b1110100,  // F: A___EFG = 1000111 -> 1110100
-    0b1100111,  // G: A_CDEF_ = 1011110 -> 1100111
-    0b1011110,  // H: _BC_EFG = 0110111 -> 1011110
-    0b1000100,  // I: ____EF_ = 0000110 -> 1000100
-    0b0001011,  // J: _BCD___ = 0111000 -> 0001011
-    0b1110110,  // K: A_C_EFG = 1010111 -> 1110110
-    0b1000101,  // L: ___DEF_ = 0001110 -> 1000101
-    0b1101001,  // M: AB_D_F_ = 1101010 -> 1101001
-    0b1101110,  // N: ABC_EF_ = 1110110 -> 1101110
-    0b0010111,  // o: __CDE_G = 0011101 -> 0010111
-    0b1111100,  // P: AB__EFG = 1100111 -> 1111100
-    0b1111010,  // q: ABC__FG = 1110011 -> 1111010
-    0b0010100,  // r: ____E_G = 0000101 -> 0010100
-    0b1110011,  // S: A_CD_FG = 1011011 -> 1110011
-    0b1010101,  // t: ___DEFG = 0001111 -> 1010101
-    0b1001111,  // U: _BCDEF_ = 0111110 -> 1001111
-    0b1001011,  // V: _BCD_F_ = 0111010 -> 1001011
-    0b0100111,  // W: A_CDE__ = 1011100 -> 0100111
-    0b0010001,  // x: ___D__G = 0001001 -> 0010001
-    0b1011011,  // y: _BCD_FG = 0111011 -> 1011011
-    0b0111101,  // z: AB_DE_G = 1101101 -> 0111101
+    0b1011111,  // 9: ABCD_FG = 1111011 -> 1011111
+    0b0000000,  // (space)              -> 0000000
+    0b0111111,  // A: ABC_EFG = 111_111 -> 0111111
+    0b1111010,  // b: __CDEFG = 0011111 -> 1111010
+    0b1100011,  // C: A__DEF_ = 1001110 -> 1100011
+    0b1111100,  // d: _BCDE_G = 0111101 -> 1111100
+    0b1101011,  // E: A__DEFG = 1001111 -> 1101011
+    0b0101011,  // F: A___EFG = 1000111 -> 0101011
+    0b1110011,  // G: A_CDEF_ = 1011110 -> 1110011
+    0b0111110,  // H: _BC_EFG = 0110111 -> 0111110
+    0b0100010,  // I: ____EF_ = 0000110 -> 0100010
+    0b1010100,  // J: _BCD___ = 0111000 -> 1010100
+    0b0111011,  // K: A_C_EFG = 1010111 -> 0111011
+    0b1100010,  // L: ___DEF_ = 0001110 -> 1100010
+    0b1000111,  // M: AB_D_F_ = 1101010 -> 1000111
+    0b0110111,  // N: ABC_EF_ = 1110110 -> 0110111
+    0b1111000,  // o: __CDE_G = 0011101 -> 1111000
+    0b0101111,  // P: AB__EFG = 1100111 -> 0101111
+    0b0011111,  // q: ABC__FG = 1110011 -> 0011111
+    0b0101000,  // r: ____E_G = 0000101 -> 0101000
+    0b1011011,  // S: A_CD_FG = 1011011 -> 1011011
+    0b1101010,  // t: ___DEFG = 0001111 -> 1101010
+    0b1110110,  // U: _BCDEF_ = 0111110 -> 1110110
+    0b1010110,  // V: _BCD_F_ = 0111010 -> 1010110
+    0b1110001,  // W: A_CDE__ = 1011100 -> 1110001
+    0b1001000,  // x: ___D__G = 0001001 -> 1001000
+    0b1011110,  // y: _BCD_FG = 0111011 -> 1011110
+    0b1101101,  // z: AB_DE_G = 1101101 -> 1101101
 };
 
-static const uint8_t com_pins[4]  = {PIN_COM4, PIN_COM3, PIN_COM2, PIN_COM1};
-volatile uint8_t     com_masks[4] = {0, 0, 0, 0};
+static const uint8_t com_pins[4]  = {PIN_COM1, PIN_COM2, PIN_COM3, PIN_COM4};
+volatile uint8_t     seg_masks[4] = {0, 0, 0, 0};
 
-void calculate_com_masks(uint8_t d1_segs, uint8_t d2_segs, uint8_t d3_segs)
+void calculate_seg_masks(uint8_t d1_segs, uint8_t d2_segs, uint8_t d3_segs)
 {
-    // Convert from 0bFAGBECD to com_masks
-    //       D1 D2 D3
-    //    0b xx xx xx
-    // COM4: FA FA FA
-    // COM3: GB GB GB
-    // COM2: EC EC EC
-    // COM1: D0 D0 D0
-    com_masks[0] = ((d1_segs & 0x60) >> 1) | ((d2_segs & 0x60) >> 3) | ((d3_segs & 0x60) >> 5);  // COM4: FA bits
-    com_masks[1] = ((d1_segs & 0x18) << 1) | ((d2_segs & 0x18) >> 1) | ((d3_segs & 0x18) >> 3);  // COM3: GB bits
-    com_masks[2] = ((d1_segs & 0x06) << 3) | ((d2_segs & 0x06) << 1) | ((d3_segs & 0x06) >> 1);  // COM2: EC bits
-    com_masks[3] = ((d1_segs & 0x01) << 5) | ((d2_segs & 0x01) << 3) | ((d3_segs & 0x01) << 1);  // COM1: D  bits
+    // Convert Character Bit Order (0bDECGBFA) to Segment Masks for Each Common Pin
+    //                         LCD Char | Seg Group Mask   | <<Shifts>>
+    //                         D1 D2 D3 | 0bDECGBFA        | D1  D2  D3
+    // Segment Mask for COM1 - D_ D_ D_ - 0b1000000 / 0x40 - >>1 >>3 >>5
+    // Segment Mask for COM2 - EC EC EC - 0b0110000 / 0x30 -     >>2 >>4
+    // Segment Mask for COM3 - GB GB GB - 0b0001100 / 0x0C - <<2     >>2
+    // Segment Mask for COM4 - FA FA FA - 0b0000011 / 0x03 - <<4 <<2
+    //              Segments - 65 43 21
+    seg_masks[0] = ((d1_segs & 0x40) >> 1) | ((d2_segs & 0x40) >> 3) | ((d3_segs & 0x40) >> 5);  // COM1: D  bits
+    seg_masks[1] = ((d1_segs & 0x30) >> 0) | ((d2_segs & 0x30) >> 2) | ((d3_segs & 0x30) >> 4);  // COM2: EC bits
+    seg_masks[2] = ((d1_segs & 0x0C) << 2) | ((d2_segs & 0x0C) >> 0) | ((d3_segs & 0x0C) >> 2);  // COM3: GB bits
+    seg_masks[3] = ((d1_segs & 0x03) << 4) | ((d2_segs & 0x03) << 2) | ((d3_segs & 0x03) >> 0);  // COM4: FA bits
 }
 
 void show_number(uint16_t number, uint8_t base)
 {
-    uint8_t d3_segs = digit_segments[number % base];  // D3
+    uint8_t d3_segs = character_segments[number % base];  // D3
     number /= base;
-    uint8_t d2_segs = digit_segments[number % base];  // D2
+    uint8_t d2_segs = character_segments[number % base];  // D2
     number /= base;
-    uint8_t d1_segs = digit_segments[number % base];  // D1
+    uint8_t d1_segs = character_segments[number % base];  // D1
 
-    calculate_com_masks(d1_segs, d2_segs, d3_segs);
+    calculate_seg_masks(d1_segs, d2_segs, d3_segs);
 }
 
 void show_string(const char* str)
@@ -110,16 +111,16 @@ void show_string(const char* str)
         char c = str[i];
 
         if (c >= '0' && c <= '9')
-            segs[i] = digit_segments[c - '0'];
+            segs[i] = character_segments[c - '0'];
         else if (c == ' ')
-            segs[i] = digit_segments[10];
+            segs[i] = character_segments[10];
         else if (c >= 'A' && c <= 'Z')
-            segs[i] = digit_segments[c - 'A' + 11];
+            segs[i] = character_segments[c - 'A' + 11];
         else if (c >= 'a' && c <= 'z')
-            segs[i] = digit_segments[c - 'a' + 11];
+            segs[i] = character_segments[c - 'a' + 11];
     }
 
-    calculate_com_masks(segs[0], segs[1], segs[2]);
+    calculate_seg_masks(segs[0], segs[1], segs[2]);
 }
 
 void systick_init(void)
@@ -164,26 +165,28 @@ void SysTick_Handler(void)
 int main(void)
 {
     SystemInit();
-    Delay_Ms(50);
 
     funGpioInitAll();
-    funPinMode(PIN_COM1, GPIO_CNF_IN_FLOATING);
-    funPinMode(PIN_COM2, GPIO_CNF_IN_FLOATING);
-    funPinMode(PIN_COM3, GPIO_CNF_IN_FLOATING);
-    funPinMode(PIN_COM4, GPIO_CNF_IN_FLOATING);
-    funPinMode(PIN_SEG1, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-    funPinMode(PIN_SEG2, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-    funPinMode(PIN_SEG3, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-    funPinMode(PIN_SEG4, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-    funPinMode(PIN_SEG5, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-    funPinMode(PIN_SEG6, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+    // funPinMode(PIN_COM1, GPIO_CNF_IN_FLOATING);
+    // funPinMode(PIN_COM2, GPIO_CNF_IN_FLOATING);
+    // funPinMode(PIN_COM3, GPIO_CNF_IN_FLOATING);
+    // funPinMode(PIN_COM4, GPIO_CNF_IN_FLOATING);
+    // funPinMode(PIN_SEG1, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+    // funPinMode(PIN_SEG2, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+    // funPinMode(PIN_SEG3, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+    // funPinMode(PIN_SEG4, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+    // funPinMode(PIN_SEG5, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+    // funPinMode(PIN_SEG6, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
     // funDigitalWrite(PIN_SEG1, FUN_LOW);
     // funDigitalWrite(PIN_SEG2, FUN_LOW);
     // funDigitalWrite(PIN_SEG3, FUN_LOW);
     // funDigitalWrite(PIN_SEG4, FUN_LOW);
     // funDigitalWrite(PIN_SEG5, FUN_LOW);
     // funDigitalWrite(PIN_SEG6, FUN_LOW);
-    GPIOC->BSHR = 0x3F << 16;  // Reset PC0-PC5 to LOW
+
+    GPIOD->CFGLR = (GPIOD->CFGLR & 0xF000FFF0) | 0x04440004;  // Set PD0, PD4, PD5, PD6 to floating input
+    GPIOC->CFGLR = (GPIOC->CFGLR & 0xFF000000) | 0x00222222;  // Set PC0-PC5 to 2MHz push-pull output
+    GPIOC->BSHR  = 0x3F << 16;                                // Set PC0-PC5 to LOW
 
     systick_init();
 
@@ -192,21 +195,21 @@ int main(void)
         // 1000ms / (4ms x 4) = 62.5 FPS
         for (uint8_t i = 0; i < 4; i++)
         {
-            uint8_t mask     = com_masks[i];
-            uint8_t inv_mask = ~mask & 0x3F;  // Keep lower 6 bits for PC0-PC5
-            uint8_t com_pin  = com_pins[i];
+            uint8_t com_pin      = com_pins[i];
+            uint8_t seg_mask     = seg_masks[i];
+            uint8_t inv_seg_mask = ~seg_mask & 0x3F;  // Keep lower 6 bits for PC5-PC0
 
             // COM - Output
             funPinMode(com_pin, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
 
             // COM - High, SEG1-6 - Low as required
             funDigitalWrite(com_pin, FUN_HIGH);
-            GPIOC->BSHR = (mask << 16) | inv_mask;
+            GPIOC->BSHR = (seg_mask << 16) | inv_seg_mask;
             Delay_Ms(2);
 
             // COM - Low, SEG1-6 - High as required
             funDigitalWrite(com_pin, FUN_LOW);
-            GPIOC->BSHR = mask | (inv_mask << 16);
+            GPIOC->BSHR = (inv_seg_mask << 16) | seg_mask;
             Delay_Ms(2);
 
             // COM - Float

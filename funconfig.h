@@ -66,6 +66,6 @@
 #define FUNCONF_USE_HSE           0         // Use HSE - External High-Frequency Oscillator
 #define FUNCONF_SYSTEM_CORE_CLOCK 24000000  // Computed Clock in Hz - 24MHz x 2 = 48MHz
 #define FUNCONF_SYSTICK_USE_HCLK  1         // Set SYSTICK to use HCLK or HCLK/8.
-#define FUNCONF_USE_DEBUGPRINTF   1
+#define FUNCONF_USE_DEBUGPRINTF   0
 
 #endif
