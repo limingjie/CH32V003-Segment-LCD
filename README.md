@@ -34,10 +34,10 @@ I found these LCD panels on [AliExpress](https://www.aliexpress.com/item/1005005
 Use the following code to calculate the segment values for each Common pin.
 
 ```C
-    com_masks[0] = ((d1_segs & 0x60) >> 1) | ((d2_segs & 0x60) >> 3) | ((d3_segs & 0x60) >> 5);  // COM4: FA bits
-    com_masks[1] = ((d1_segs & 0x18) << 1) | ((d2_segs & 0x18) >> 1) | ((d3_segs & 0x18) >> 3);  // COM3: GB bits
-    com_masks[2] = ((d1_segs & 0x06) << 3) | ((d2_segs & 0x06) << 1) | ((d3_segs & 0x06) >> 1);  // COM2: EC bits
-    com_masks[3] = ((d1_segs & 0x01) << 5) | ((d2_segs & 0x01) << 3) | ((d3_segs & 0x01) << 1);  // COM1: D  bits
+com_masks[0] = ((d1_segs & 0x60) >> 1) | ((d2_segs & 0x60) >> 3) | ((d3_segs & 0x60) >> 5);
+com_masks[1] = ((d1_segs & 0x18) << 1) | ((d2_segs & 0x18) >> 1) | ((d3_segs & 0x18) >> 3);
+com_masks[2] = ((d1_segs & 0x06) << 3) | ((d2_segs & 0x06) << 1) | ((d3_segs & 0x06) >> 1);
+com_masks[3] = ((d1_segs & 0x01) << 5) | ((d2_segs & 0x01) << 3) | ((d3_segs & 0x01) << 1);
 ```
 
 The wiring diagram of the LCD display (from [Pacific Display](https://www.pacificdisplay.com/lcd_multiplex_drive.htm)).
@@ -55,32 +55,28 @@ For a 1/2 bias LCD, the Common pins require 3 voltages: +V, +V/2, and 0. Use the
 For CH32V003, each common pin is pulled up and down by resistors to create +V/2, and the timing can be implemented with the following code.
 
 ```C
-    while (1)
+while (1)
+{
+    // 1000ms / (4ms x 4) = 62.5 FPS
+    for (uint8_t i = 0; i < 4; i++)
     {
-        // 1000ms / (4ms x 4) = 62.5 FPS
-        for (uint8_t i = 0; i < 4; i++)
-        {
-            uint8_t mask     = com_masks[i];
-            uint8_t inv_mask = ~mask & 0x3F;  // Keep lower 6 bits for PC0-PC5
-            uint8_t com_pin  = com_pins[i];
-
-            // COM - Output
-            funPinMode(com_pin, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
-
-            // COM - High, SEG1-6 - Low as required
-            funDigitalWrite(com_pin, FUN_HIGH);
-            GPIOC->BSHR = (mask << 16) | inv_mask;
-            Delay_Ms(2);
-
-            // COM - Low, SEG1-6 - High as required
-            funDigitalWrite(com_pin, FUN_LOW);
-            GPIOC->BSHR = mask | (inv_mask << 16);
-            Delay_Ms(2);
-
-            // COM - Float
-            funPinMode(com_pin, GPIO_CNF_IN_FLOATING);
-        }
+        uint8_t mask     = com_masks[i];
+        uint8_t inv_mask = ~mask & 0x3F;  // Keep lower 6 bits for PC0-PC5
+        uint8_t com_pin  = com_pins[i];
+        // COM - Output
+        funPinMode(com_pin, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
+        // COM - High, SEG1-6 - Low as required
+        funDigitalWrite(com_pin, FUN_HIGH);
+        GPIOC->BSHR = (mask << 16) | inv_mask;
+        Delay_Ms(2);
+        // COM - Low, SEG1-6 - High as required
+        funDigitalWrite(com_pin, FUN_LOW);
+        GPIOC->BSHR = mask | (inv_mask << 16);
+        Delay_Ms(2);
+        // COM - Float
+        funPinMode(com_pin, GPIO_CNF_IN_FLOATING);
     }
+}
 ```
 
 ### LCD Characters
