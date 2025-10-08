@@ -1,10 +1,10 @@
-# CH32V003 3-Digit Segment LCD Driver
+# CH32V003 3-Digit 7-Segment LCD Driver
 
-The solution provides an efficient segment LCD driver for the low-cost CH32V003 microcontroller, capable of driving a TN Positive 3-digit LCD panel using minimal hardware resources and optimized firmware.
+The solution provides an efficient segment LCD driver for the low-cost CH32V003 microcontroller, capable of driving a TN Positive 3-digit 7-Segment LCD using minimal hardware resources and optimized firmware.
 
 ![Breadboard](./Images/CH32V003%20Segment%20LCD%20-%20Breadboard.jpeg)
 
-- [CH32V003 3-Digit Segment LCD Driver](#ch32v003-3-digit-segment-lcd-driver)
+- [CH32V003 3-Digit 7-Segment LCD Driver](#ch32v003-3-digit-7-segment-lcd-driver)
   - [LCD Control Theory](#lcd-control-theory)
     - [LCD Multiplex](#lcd-multiplex)
     - [LCD Driver Signal and Timing](#lcd-driver-signal-and-timing)
@@ -15,7 +15,7 @@ The solution provides an efficient segment LCD driver for the low-cost CH32V003 
   - [7-Segment Display Characters](#7-segment-display-characters)
   - [Hardware](#hardware)
     - [MCU - CH32V003](#mcu---ch32v003)
-    - [TN Positive 3-Digit Segment LCD Panel](#tn-positive-3-digit-segment-lcd-panel)
+    - [TN Positive 3-Digit 7-Segment LCD Panel](#tn-positive-3-digit-7-segment-lcd-panel)
       - [Specifications](#specifications)
   - [References](#references)
   - [License](#license)
@@ -157,13 +157,13 @@ The CH32V003 is a low-cost, high-performance 32-bit RISC-V microcontroller from 
 
 [Link to More CH32V003 Pinout charts](https://github.com/limingjie/WCH-MCU-Pinouts/tree/main/MCU/CH32V)
 
-### TN Positive 3-Digit Segment LCD Panel
+### TN Positive 3-Digit 7-Segment LCD Panel
 
 I found these LCD panels on [AliExpress](https://www.aliexpress.com/item/1005005697772193.html).
 
 #### Specifications
 
-10-Pin TN Positive 3-Digit Segment LCD Panel, 3.0V Digital Tube Display
+10-Pin TN Positive 3-Digit 7-Segment LCD Panel, 3.0V Digital Tube Display
 
 1. **Dimensions**: 11.5×10.3/6.3mm, 10 pins, 2 mm pitch
 2. **Conductive glass thickness**: 0.7 mm
