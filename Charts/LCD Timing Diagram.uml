@@ -2,7 +2,7 @@
 
 skinparam dpi 150
 skinparam defaultFontName "Iosevka Curly"
-scale 1 as 50 pixels
+scale 1 as 100 pixels
 
 <style>
 timingDiagram {
