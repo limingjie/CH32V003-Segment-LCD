@@ -75,7 +75,7 @@ static const uint8_t character_segments[37] = {
 static const uint8_t com_pins[4]  = {PIN_COM1, PIN_COM2, PIN_COM3, PIN_COM4};
 volatile uint8_t     seg_masks[4] = {0, 0, 0, 0};
 
-void calculate_seg_masks(uint8_t d1_segs, uint8_t d2_segs, uint8_t d3_segs)
+void calculate_seg_masks(const uint8_t d1_segs, const uint8_t d2_segs, const uint8_t d3_segs)
 {
     // Convert Character Bit Order (0bDECGBFA) to Segment Masks for Each Common Pin
     //                         LCD Char | Seg Group Mask   | <<Shifts>>
@@ -91,13 +91,13 @@ void calculate_seg_masks(uint8_t d1_segs, uint8_t d2_segs, uint8_t d3_segs)
     seg_masks[3] = ((d1_segs & 0x03) << 4) | ((d2_segs & 0x03) << 2) | ((d3_segs & 0x03) >> 0);  // COM4: FA bits
 }
 
-void show_number(uint16_t number, uint8_t base)
+void show_number(uint16_t number, const uint8_t base)
 {
-    uint8_t d3_segs = character_segments[number % base];  // D3
+    const uint8_t d3_segs = character_segments[number % base];  // D3
     number /= base;
-    uint8_t d2_segs = character_segments[number % base];  // D2
+    const uint8_t d2_segs = character_segments[number % base];  // D2
     number /= base;
-    uint8_t d1_segs = character_segments[number % base];  // D1
+    const uint8_t d1_segs = character_segments[number % base];  // D1
 
     calculate_seg_masks(d1_segs, d2_segs, d3_segs);
 }
@@ -200,9 +200,9 @@ int main(void)
         // 1000ms / (4ms x 4) = 62.5 FPS
         for (uint8_t i = 0; i < 4; i++)
         {
-            uint8_t com_pin      = com_pins[i];
-            uint8_t seg_mask     = seg_masks[i];
-            uint8_t inv_seg_mask = ~seg_mask & 0x3F;  // Keep lower 6 bits for PC5-PC0
+            const uint8_t com_pin      = com_pins[i];
+            const uint8_t seg_mask     = seg_masks[i];
+            const uint8_t inv_seg_mask = ~seg_mask & 0x3F;  // Keep lower 6 bits for PC5-PC0
 
             // COM - Output
             funPinMode(com_pin, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
