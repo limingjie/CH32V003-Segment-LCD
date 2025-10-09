@@ -43,7 +43,6 @@ static const uint8_t character_segments[37] = {
     0b0010101,  // 7: ABC____ = 1110000 -> 0010101
     0b1111111,  // 8: ABCDEFG = 1111111 -> 1111111
     0b1011111,  // 9: ABCD_FG = 1111011 -> 1011111
-    0b0000000,  // (space)              -> 0000000
     0b0111111,  // A: ABC_EFG = 111_111 -> 0111111
     0b1111010,  // b: __CDEFG = 0011111 -> 1111010
     0b1100011,  // C: A__DEF_ = 1001110 -> 1100011
@@ -70,6 +69,7 @@ static const uint8_t character_segments[37] = {
     0b1001000,  // x: ___D__G = 0001001 -> 1001000
     0b1011110,  // y: _BCD_FG = 0111011 -> 1011110
     0b1101101,  // z: AB_DE_G = 1101101 -> 1101101
+    0b0000000,  // (space)              -> 0000000
 };
 
 static const uint8_t com_pins[4]  = {PIN_COM1, PIN_COM2, PIN_COM3, PIN_COM4};
@@ -91,20 +91,16 @@ void calculate_seg_masks(const uint8_t d1_segs, const uint8_t d2_segs, const uin
     seg_masks[3] = ((d1_segs & 0x03) << 4) | ((d2_segs & 0x03) << 2) | ((d3_segs & 0x03) >> 0);  // COM4: FA bits
 }
 
-void show_number(uint16_t number, const uint8_t base)
+void show_hex_number(uint16_t number)
 {
-    const uint8_t d3_segs = character_segments[number % base];  // D3
-    number /= base;
-    const uint8_t d2_segs = character_segments[number % base];  // D2
-    number /= base;
-    const uint8_t d1_segs = character_segments[number % base];  // D1
-
-    calculate_seg_masks(d1_segs, d2_segs, d3_segs);
+    calculate_seg_masks(character_segments[(number >> 8) & 0x0F],  // D1
+                        character_segments[(number >> 4) & 0x0F],  // D2
+                        character_segments[number & 0x0F]);        // D3
 }
 
 void show_string(const char* str)
 {
-    uint8_t segs[3] = {0, 0, 0};  // Initialize to blank
+    uint8_t segs[3] = {0, 0, 0};  // D1 D2 D3
 
     for (uint8_t i = 0; i < 3; i++)
     {
@@ -119,14 +115,14 @@ void show_string(const char* str)
         }
         else if (c == ' ')
         {
-            index = 10;
+            index = 36;
         }
         else
         {
             c |= 0x20;  // Case-insensitive
             if (c >= 'a' && c <= 'z')
             {
-                index = c - 'a' + 11;
+                index = c - 'a' + 10;
             }
             else
             {
@@ -154,17 +150,18 @@ void SysTick_Handler(void)
 {
     // LCDReady  3  2  1  0 Go
     // 01234567890123456789012
-    static char*   startup = "LCDReady  3  2  1  0 Go";
-    static int16_t counter = -80;
+    static char*    startup = "LCDReady  3  2  1  0 Go";
+    static uint16_t counter = 0;
 
     SysTick->CMP += FUNCONF_SYSTEM_CORE_CLOCK / 1000 * 100;  // 100ms
     SysTick->SR = 0;
 
-    counter = (counter + 1) % 1000;
-    if (counter < 0)
-        show_string(&startup[21 - -counter / 10 * 3]);
+    if (++counter < 64)
+        show_string(&startup[(counter >> 3) * 3]);
+    else if (counter > 0xFFF + 64)
+        counter = 0;
     else
-        show_number(counter, 10);
+        show_hex_number(counter - 64);
 }
 
 int main(void)
