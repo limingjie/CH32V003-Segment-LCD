@@ -104,20 +104,37 @@ void show_number(uint16_t number, uint8_t base)
 
 void show_string(const char* str)
 {
-    uint8_t segs[3] = {0, 0, 0};  // D1, D2, D3
+    uint8_t segs[3] = {0, 0, 0};  // Initialize to blank
 
-    for (int i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         char c = str[i];
+        if (c == '\0')
+            break;  // Early termination
 
+        uint8_t index;
         if (c >= '0' && c <= '9')
-            segs[i] = character_segments[c - '0'];
+        {
+            index = c - '0';
+        }
         else if (c == ' ')
-            segs[i] = character_segments[10];
-        else if (c >= 'A' && c <= 'Z')
-            segs[i] = character_segments[c - 'A' + 11];
-        else if (c >= 'a' && c <= 'z')
-            segs[i] = character_segments[c - 'a' + 11];
+        {
+            index = 10;
+        }
+        else
+        {
+            c |= 0x20;  // Case-insensitive
+            if (c >= 'a' && c <= 'z')
+            {
+                index = c - 'a' + 11;
+            }
+            else
+            {
+                continue;  // Skip invalid characters
+            }
+        }
+
+        segs[i] = character_segments[index];
     }
 
     calculate_seg_masks(segs[0], segs[1], segs[2]);
@@ -135,29 +152,17 @@ void systick_init(void)
 void SysTick_Handler(void) __attribute__((interrupt));
 void SysTick_Handler(void)
 {
+    // LCDReady  3  2  1  0 Go
+    // 01234567890123456789012
+    static char*   startup = "LCDReady  3  2  1  0 Go";
     static int16_t counter = -80;
 
     SysTick->CMP += FUNCONF_SYSTEM_CORE_CLOCK / 1000 * 100;  // 100ms
     SysTick->SR = 0;
 
     counter = (counter + 1) % 1000;
-
-    if (counter < -70)
-        show_string("LCD");
-    else if (counter < -60)
-        show_string("Rea");
-    else if (counter < -50)
-        show_string("dy ");
-    else if (counter < -40)
-        show_string(" 3 ");
-    else if (counter < -30)
-        show_string(" 2 ");
-    else if (counter < -20)
-        show_string(" 1 ");
-    else if (counter < -10)
-        show_string(" 0 ");
-    else if (counter < 0)
-        show_string("Go ");
+    if (counter < 0)
+        show_string(&startup[21 - -counter / 10 * 3]);
     else
         show_number(counter, 10);
 }
