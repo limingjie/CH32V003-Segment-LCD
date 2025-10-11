@@ -8,7 +8,7 @@
 
 #include "ch32fun.h"
 
-// TN Positive 3-Digit Segment LCD
+// TN Positive 3-Digit 7-Segment LCD
 //
 //    LCD PINOUT     |  Segments |  Segment Matrix and CH32V003 Pin Mapping
 //                   |           |
@@ -43,7 +43,7 @@ static const uint8_t character_segments[37] = {
     0b0010101,  // 7: ABC____ = 1110000 -> 0010101
     0b1111111,  // 8: ABCDEFG = 1111111 -> 1111111
     0b1011111,  // 9: ABCD_FG = 1111011 -> 1011111
-    0b0111111,  // A: ABC_EFG = 111_111 -> 0111111
+    0b0111111,  // A: ABC_EFG = 1110111 -> 0111111
     0b1111010,  // b: __CDEFG = 0011111 -> 1111010
     0b1100011,  // C: A__DEF_ = 1001110 -> 1100011
     0b1111100,  // d: _BCDE_G = 0111101 -> 1111100
@@ -91,7 +91,7 @@ void calculate_seg_masks(const uint8_t d1_segs, const uint8_t d2_segs, const uin
     seg_masks[3] = ((d1_segs & 0x03) << 4) | ((d2_segs & 0x03) << 2) | ((d3_segs & 0x03) >> 0);  // COM4: FA bits
 }
 
-void show_hex_number(uint16_t number)
+void show_hex_number(const uint16_t number)
 {
     calculate_seg_masks(character_segments[(number >> 8) & 0x0F],  // D1
                         character_segments[(number >> 4) & 0x0F],  // D2
@@ -108,26 +108,30 @@ void show_string(const char* str)
         if (c == '\0')
             break;  // Early termination
 
+        // Convert to lowercase
+        // - SPC -> 0x20      | 0x20 = 0x20      - Unchanged
+        // - 0-9 -> 0x30-0x39 | 0x20 = 0x30-0x39 - Unchanged
+        // - A-Z -> 0x41-0x5A | 0x20 = 0x61-0x7A - Converted to lowercase
+        // - a-z -> 0x61-0x7A | 0x20 = 0x61-0x7A - Unchanged
+        c |= 0x20;
+
         uint8_t index;
         if (c >= '0' && c <= '9')
         {
             index = c - '0';
         }
-        else if (c == ' ')
+        else if (c >= 'a' && c <= 'z')
         {
-            index = 36;
+            index = c - 'a' + 10;
         }
+        // segs initialized as spaces
+        // else if (c == ' ')
+        // {
+        //     index = 36;
+        // }
         else
         {
-            c |= 0x20;  // Case-insensitive
-            if (c >= 'a' && c <= 'z')
-            {
-                index = c - 'a' + 10;
-            }
-            else
-            {
-                continue;  // Skip invalid characters
-            }
+            continue;
         }
 
         segs[i] = character_segments[index];
@@ -150,18 +154,20 @@ void SysTick_Handler(void)
 {
     // LCDReady  3  2  1  0 Go
     // 01234567890123456789012
-    static char*    startup = "LCDReady  3  2  1  0 Go";
-    static uint16_t counter = 0;
+    static char*   startup = "LCDReady  3  2  1  0 Go";
+    static int16_t counter = -64;
 
     SysTick->CMP += FUNCONF_SYSTEM_CORE_CLOCK / 1000 * 100;  // 100ms
     SysTick->SR = 0;
 
-    if (++counter < 64)
-        show_string(&startup[(counter >> 3) * 3]);
-    else if (counter > 0xFFF + 64)
-        counter = 0;
+    ++counter;
+    if (counter < 0)
+        show_string(&startup[((counter + 64) >> 3) * 3]);
     else
-        show_hex_number(counter - 64);
+    {
+        counter &= 0xFFF;
+        show_hex_number(counter);
+    }
 }
 
 int main(void)

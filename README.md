@@ -109,9 +109,9 @@ while (1)
     // 1000ms / (4ms x 4) = 62.5 FPS
     for (uint8_t i = 0; i < 4; i++)
     {
-        uint8_t com_pin      = com_pins[i];
-        uint8_t seg_mask     = seg_masks[i];
-        uint8_t inv_seg_mask = ~seg_mask & 0x3F;  // Keep lower 6 bits for PC5-PC0
+        const uint8_t com_pin      = com_pins[i];
+        const uint8_t seg_mask     = seg_masks[i];
+        const uint8_t inv_seg_mask = ~seg_mask & 0x3F;  // Keep lower 6 bits for PC5-PC0
 
         // COM - Output
         funPinMode(com_pin, GPIO_Speed_2MHz | GPIO_CNF_OUT_PP);
